@@ -1,0 +1,3156 @@
+<!DOCTYPE html>
+<html lang="zh-CN" data-page-node-id="PJu2hdfHj81PahpVSaXShs">
+<head data-page-node-id="lTjMOVkbeJ6JNsD68qFBzd">
+<meta charset="UTF-8" data-page-node-id="bC1kjP3sEy1UgAFdgNmJZB">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" data-page-node-id="TtbMtAjHynftzqnr3iCvsz">
+<meta name="theme-color" content="#1E3A5F" data-page-node-id="CJHLi4wHtVyZKsNp6pP6Rv">
+<meta name="apple-mobile-web-app-capable" content="yes" data-page-node-id="93Yk6gw5NYIHBWPxZWAhNk">
+<title>每周复盘工作台</title>
+<link rel="icon" type="image/x-icon" href="logo/favicon.ico">
+<link rel="icon" type="image/png" sizes="32x32" href="logo/logo-32.png">
+<link rel="apple-touch-icon" href="logo/logo-180.png">
+<!-- 本工作台为纯前端单文件应用：零外部依赖、零后端、数据存于浏览器 localStorage -->
+<style>
+:root{
+  --cream:#FDFBF6;
+  --cream-2:#F7F4EC;
+  --cream-3:#EFEADE;
+  --navy:#1E3A5F;
+  --navy-2:#2C5282;
+  --navy-soft:#E8EEF5;
+  --green:#3E9B72;
+  --green-2:#5BB08A;
+  --green-soft:#E9F5EF;
+  --red:#C85A4F;
+  --red-soft:#FBEBE9;
+  --amber:#D9963C;
+  --amber-soft:#FCF2E2;
+  --text:#22303C;
+  --text-2:#4A5A6A;
+  --muted:#8493A2;
+  --border:#E5E1D6;
+  --border-2:#D8D3C5;
+  --white:#FFFFFF;
+  --radius:14px;
+  --radius-sm:10px;
+  --shadow:0 1px 2px rgba(30,58,95,.05), 0 4px 14px rgba(30,58,95,.05);
+  --shadow-lg:0 8px 30px rgba(30,58,95,.13);
+  --sidebar-w:224px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;padding:0}
+body{
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+  background:var(--cream);color:var(--text);font-size:14px;line-height:1.6;
+  -webkit-font-smoothing:antialiased;
+}
+button,input,select,textarea{font-family:inherit;font-size:14px;color:var(--text)}
+button{cursor:pointer;border:none;background:none}
+svg{display:block}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-thumb{background:#D6D1C4;border-radius:8px}
+::-webkit-scrollbar-track{background:transparent}
+
+/* ============ 布局 ============ */
+.app{display:flex;min-height:100vh}
+.sidebar{
+  width:var(--sidebar-w);flex:0 0 var(--sidebar-w);background:var(--white);
+  border-right:1px solid var(--border);position:sticky;top:0;height:100vh;
+  display:flex;flex-direction:column;z-index:40;
+}
+.brand{padding:20px 18px 14px;border-bottom:1px solid var(--border)}
+.brand-row{display:flex;align-items:center;gap:10px}
+.brand-mark{
+  width:34px;height:34px;border-radius:10px;background:var(--navy);color:#fff;
+  display:flex;align-items:center;justify-content:center;flex:0 0 34px;
+}
+.brand-mark svg{width:19px;height:19px}
+.brand-name{font-size:15px;font-weight:700;color:var(--navy);letter-spacing:.3px}
+.brand-sub{font-size:11px;color:var(--muted);margin-top:1px}
+.nav{padding:12px 10px;flex:1;overflow-y:auto}
+.nav-label{font-size:11px;color:var(--muted);padding:8px 10px 6px;letter-spacing:1px;font-weight:600}
+.nav-item{
+  display:flex;align-items:center;gap:10px;width:100%;padding:9px 11px;border-radius:var(--radius-sm);
+  color:var(--text-2);font-size:14px;font-weight:500;margin-bottom:2px;text-align:left;transition:background .15s,color .15s;
+}
+.nav-item svg{width:17px;height:17px;flex:0 0 17px}
+.nav-item:hover{background:var(--cream-2)}
+.nav-item.active{background:var(--navy);color:#fff}
+.nav-item.active svg{color:#fff}
+.nav-item .badge{
+  margin-left:auto;background:var(--cream-3);color:var(--text-2);font-size:11px;
+  padding:1px 7px;border-radius:20px;font-weight:600;min-width:20px;text-align:center;
+}
+.nav-item.active .badge{background:rgba(255,255,255,.22);color:#fff}
+.sidebar-foot{padding:12px;border-top:1px solid var(--border)}
+.side-mini{
+  display:flex;align-items:center;gap:8px;width:100%;padding:8px 10px;border-radius:var(--radius-sm);
+  font-size:12.5px;color:var(--text-2);background:var(--cream-2);border:1px solid var(--border);
+}
+.side-mini svg{width:15px;height:15px}
+
+.main{flex:1;min-width:0;display:flex;flex-direction:column}
+.topbar{
+  position:sticky;top:0;z-index:30;background:rgba(253,251,246,.92);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--border);padding:10px 20px;display:flex;align-items:center;gap:12px;flex-wrap:wrap;
+}
+.mobile-brand{display:none;align-items:center;gap:8px;font-weight:700;color:var(--navy);font-size:15px}
+.week-nav{display:flex;align-items:center;gap:6px;background:var(--white);border:1px solid var(--border);border-radius:var(--radius-sm);padding:3px}
+.icon-btn{
+  width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;
+  color:var(--text-2);transition:background .15s;
+}
+.icon-btn:hover{background:var(--cream-2)}
+.icon-btn svg{width:16px;height:16px}
+.week-select{
+  border:none;background:transparent;font-weight:600;color:var(--navy);font-size:13.5px;
+  padding:4px 6px;max-width:200px;
+}
+.week-range{font-size:12px;color:var(--muted);padding-right:6px;white-space:nowrap}
+.topbar-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.save-chip{
+  display:flex;align-items:center;gap:6px;font-size:12px;color:var(--muted);
+  background:var(--white);border:1px solid var(--border);padding:6px 10px;border-radius:20px;white-space:nowrap;
+}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--green)}
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:6px;
+  padding:8px 14px;border-radius:var(--radius-sm);font-size:13.5px;font-weight:600;
+  border:1px solid var(--border-2);background:var(--white);color:var(--text-2);transition:all .15s;min-height:38px;
+}
+.btn:hover{background:var(--cream-2);border-color:var(--border-2)}
+.btn svg{width:15px;height:15px}
+.btn-primary{background:var(--navy);color:#fff;border-color:var(--navy)}
+.btn-primary:hover{background:var(--navy-2);border-color:var(--navy-2)}
+.btn-green{background:var(--green);color:#fff;border-color:var(--green)}
+.btn-green:hover{background:var(--green-2);border-color:var(--green-2)}
+.btn-danger{background:var(--white);color:var(--red);border-color:#EEC9C4}
+.btn-danger:hover{background:var(--red-soft)}
+.btn-sm{padding:5px 10px;font-size:12.5px;min-height:32px;border-radius:8px}
+.btn-ghost{border-color:transparent;background:transparent}
+.btn-ghost:hover{background:var(--cream-2)}
+
+.content{padding:22px 24px 60px;max-width:1240px;width:100%;margin:0 auto;flex:1}
+.view{display:none;animation:fade .22s ease}
+.view.active{display:block}
+@keyframes fade{from{opacity:0;transform:translateY(4px)}to{opacity:1;transform:none}}
+
+/* ============ 通用组件 ============ */
+.page-head{margin-bottom:18px}
+.page-title{font-size:21px;font-weight:700;color:var(--navy);margin:0 0 4px;letter-spacing:.2px}
+.page-desc{font-size:13px;color:var(--muted);margin:0}
+.card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:18px;box-shadow:var(--shadow)}
+.card + .card{margin-top:16px}
+.card-head{display:flex;align-items:center;gap:10px;margin-bottom:14px;flex-wrap:wrap}
+.card-title{font-size:15px;font-weight:700;color:var(--navy);margin:0;display:flex;align-items:center;gap:8px}
+.card-title svg{width:16px;height:16px;color:var(--green)}
+.card-head .spacer{margin-left:auto}
+.hint{font-size:12px;color:var(--muted)}
+
+.stat-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+
+/* 工作 / 生活 双栏 */
+.dual{display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start}
+.dual-col{min-width:0}
+.dual-head{
+  display:flex;align-items:center;gap:8px;padding:9px 12px;border-radius:var(--radius-sm);
+  margin-bottom:10px;font-size:13px;font-weight:700;
+}
+.dual-head.work{background:var(--navy-soft);color:var(--navy)}
+.dual-head.life{background:var(--green-soft);color:#2E7A59}
+.dual-head svg{width:15px;height:15px}
+.dual-head .cnt{margin-left:auto;font-size:11.5px;font-weight:600;opacity:.72}
+.dual-empty{
+  padding:20px 12px;text-align:center;font-size:12.5px;color:var(--muted);
+  border:1px dashed var(--border-2);border-radius:var(--radius-sm);background:var(--cream-2)
+}
+.dom-tag{font-size:10.5px;font-weight:700;padding:1px 7px;border-radius:5px;white-space:nowrap}
+.dom-tag.work{background:var(--navy-soft);color:var(--navy-2)}
+.dom-tag.life{background:var(--green-soft);color:#2E7A59}
+
+/* 周能量评分 */
+.energy-wrap{display:flex;align-items:center;gap:18px;flex-wrap:wrap}
+.energy-score{
+  width:88px;height:88px;border-radius:22px;flex:0 0 88px;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;color:#fff;
+}
+.energy-score b{font-size:31px;line-height:1;font-weight:700;letter-spacing:-1px}
+.energy-score span{font-size:11px;margin-top:4px;opacity:.9}
+.energy-meta{flex:1;min-width:190px}
+.energy-scale{display:flex;gap:3px;margin-top:9px}
+.energy-scale i{flex:1;height:6px;border-radius:3px;background:var(--cream-3)}
+.energy-note{
+  font-size:12.5px;color:var(--text-2);margin-top:10px;background:var(--cream-2);
+  padding:8px 11px;border-radius:8px;white-space:pre-wrap;word-break:break-word
+}
+
+/* 季度回顾 */
+.q-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.q-cell{padding:14px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--cream-2)}
+.q-cell .qk{font-size:12px;color:var(--muted);font-weight:600}
+.q-cell .qv{font-size:22px;font-weight:700;color:var(--navy);margin-top:3px;letter-spacing:-.5px}
+.q-cell .qv small{font-size:12px;font-weight:600;color:var(--muted);margin-left:2px}
+.q-months{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.q-card{border:1px solid var(--border);border-radius:var(--radius-sm);padding:13px;background:var(--white)}
+.q-card h4{margin:0 0 9px;font-size:13px;color:var(--navy);display:flex;align-items:center;gap:6px}
+.q-card h4 .pill{margin-left:auto}
+.q-list{margin:0;padding-left:17px;font-size:12.5px;color:var(--text-2);line-height:1.85}
+.q-list li{margin-bottom:2px;word-break:break-word}
+.q-empty{font-size:12.5px;color:var(--muted);padding:6px 0}
+
+@media (max-width:1200px){
+  .stat-grid{grid-template-columns:repeat(3,1fr)}
+  .q-grid{grid-template-columns:repeat(2,1fr)}
+}
+.stat{
+  background:var(--white);border:1px solid var(--border);border-radius:var(--radius);
+  padding:15px 16px;position:relative;overflow:hidden;box-shadow:var(--shadow);
+}
+.stat-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.stat-ico{width:28px;height:28px;border-radius:8px;display:flex;align-items:center;justify-content:center;flex:0 0 28px}
+.stat-ico svg{width:15px;height:15px}
+.stat-name{font-size:12.5px;color:var(--muted);font-weight:600}
+.stat-val{font-size:27px;font-weight:700;color:var(--navy);line-height:1.15;letter-spacing:-.5px}
+.stat-val small{font-size:13px;font-weight:600;color:var(--muted);margin-left:3px}
+.stat-foot{margin-top:7px;font-size:12px;color:var(--muted);display:flex;align-items:center;gap:5px;flex-wrap:wrap}
+.delta{display:inline-flex;align-items:center;gap:3px;font-weight:700;font-size:12px}
+.delta.up{color:var(--green)}
+.delta.down{color:var(--red)}
+.delta.flat{color:var(--muted)}
+.delta svg{width:12px;height:12px}
+
+.grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+.grid-2-1{display:grid;grid-template-columns:1.35fr 1fr;gap:16px}
+
+.pill{
+  display:inline-flex;align-items:center;gap:4px;font-size:11.5px;font-weight:600;
+  padding:2px 9px;border-radius:20px;background:var(--cream-3);color:var(--text-2);white-space:nowrap;
+}
+.pill svg{width:11px;height:11px}
+.pill-green{background:var(--green-soft);color:#2E7A59}
+.pill-navy{background:var(--navy-soft);color:var(--navy)}
+.pill-red{background:var(--red-soft);color:#A9433A}
+.pill-amber{background:var(--amber-soft);color:#9A6A22}
+
+.list{display:flex;flex-direction:column;gap:10px}
+.row{
+  display:flex;gap:12px;align-items:flex-start;padding:13px 14px;border:1px solid var(--border);
+  border-radius:var(--radius-sm);background:var(--white);transition:border-color .15s,box-shadow .15s;
+}
+.row:hover{border-color:var(--border-2);box-shadow:var(--shadow)}
+.row.overdue{border-color:#F0C9C4;background:#FEF7F6}
+.row.done{background:#FBFCFB}
+.row-main{flex:1;min-width:0}
+.row-title{font-size:14px;font-weight:600;color:var(--text);word-break:break-word;display:flex;align-items:center;gap:7px;flex-wrap:wrap}
+.row.done .row-title{color:var(--muted);text-decoration:line-through}
+.row-meta{font-size:12px;color:var(--muted);margin-top:5px;display:flex;align-items:center;gap:8px;flex-wrap:wrap}
+.row-note{font-size:12.5px;color:var(--text-2);margin-top:6px;background:var(--cream-2);padding:7px 10px;border-radius:8px;white-space:pre-wrap;word-break:break-word}
+.row-actions{display:flex;gap:4px;flex-shrink:0}
+.row-actions .icon-btn{width:30px;height:30px}
+.row-actions .icon-btn svg{width:15px;height:15px}
+.tag{font-size:11px;padding:1px 8px;border-radius:6px;background:var(--navy-soft);color:var(--navy-2);font-weight:500}
+.tag.g{background:var(--green-soft);color:#2E7A59}
+.tag.a{background:var(--amber-soft);color:#9A6A22}
+.tag.r{background:var(--red-soft);color:#A9433A}
+
+.checkbox{
+  width:20px;height:20px;border-radius:6px;border:1.8px solid var(--border-2);flex:0 0 20px;margin-top:2px;
+  display:flex;align-items:center;justify-content:center;transition:all .15s;background:var(--white);
+}
+.checkbox:hover{border-color:var(--green)}
+.checkbox.on{background:var(--green);border-color:var(--green);color:#fff}
+.checkbox svg{width:12px;height:12px}
+
+.toolbar{display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+.search{position:relative;flex:1;min-width:170px}
+.search svg{position:absolute;left:11px;top:50%;transform:translateY(-50%);width:15px;height:15px;color:var(--muted)}
+.search input{
+  width:100%;padding:9px 12px 9px 33px;border:1px solid var(--border);border-radius:var(--radius-sm);
+  background:var(--white);font-size:16px;outline:none;transition:border-color .15s;min-height:40px;
+}
+.search input:focus{border-color:var(--navy-2)}
+.filter-sel{
+  padding:8px 10px;border:1px solid var(--border);border-radius:var(--radius-sm);background:var(--white);
+  font-size:16px;min-height:40px;outline:none;color:var(--text-2);
+}
+.seg{display:flex;background:var(--cream-2);border:1px solid var(--border);border-radius:var(--radius-sm);padding:3px;gap:2px}
+.seg button{padding:6px 12px;border-radius:7px;font-size:12.5px;font-weight:600;color:var(--text-2);min-height:32px}
+.seg button.on{background:var(--white);color:var(--navy);box-shadow:var(--shadow)}
+
+.empty{text-align:center;padding:36px 20px;color:var(--muted)}
+.empty svg{width:44px;height:44px;margin:0 auto 12px;color:var(--border-2)}
+.empty p{margin:0 0 4px;font-size:13.5px;color:var(--text-2);font-weight:600}
+.empty span{font-size:12.5px}
+
+/* 今天要处理 */
+.today{
+  background:linear-gradient(180deg,#FFFDF9 0%,#FFFFFF 100%);border:1px solid var(--border);
+  border-left:3px solid var(--navy);border-radius:var(--radius);padding:16px 18px;margin-bottom:18px;box-shadow:var(--shadow);
+}
+.today-head{display:flex;align-items:center;gap:9px;margin-bottom:12px;flex-wrap:wrap}
+.today-head h3{margin:0;font-size:15px;font-weight:700;color:var(--navy);display:flex;align-items:center;gap:8px}
+.today-head h3 svg{width:16px;height:16px;color:var(--amber)}
+.today-date{margin-left:auto;font-size:12px;color:var(--muted)}
+.today-list{display:flex;flex-direction:column;gap:8px}
+.today-item{
+  display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--border);
+  border-radius:var(--radius-sm);background:var(--white);
+}
+.today-item.od{border-color:#F0C9C4;background:#FEF7F6}
+.today-item .ti-main{flex:1;min-width:0}
+.today-item .ti-t{font-size:13.5px;font-weight:600;word-break:break-word}
+.today-item .ti-s{font-size:11.5px;color:var(--muted);margin-top:2px}
+.today-item.od .ti-s{color:var(--red);font-weight:600}
+.today-empty{font-size:13px;color:var(--muted);display:flex;align-items:center;gap:8px;padding:6px 0}
+.today-empty svg{width:16px;height:16px;color:var(--green)}
+
+/* 年度索引 */
+.heat{display:flex;flex-wrap:wrap;gap:5px}
+.heat-cell{
+  width:26px;height:26px;border-radius:6px;background:var(--cream-3);display:flex;align-items:center;justify-content:center;
+  font-size:9.5px;font-weight:700;color:var(--muted);transition:transform .12s;border:1px solid transparent;
+}
+.heat-cell:hover{transform:scale(1.12)}
+.heat-cell.has{cursor:pointer}
+.heat-cell.cur{border-color:var(--navy);box-shadow:0 0 0 2px rgba(30,58,95,.13)}
+.heat-legend{display:flex;align-items:center;gap:6px;font-size:11.5px;color:var(--muted);margin-top:12px;flex-wrap:wrap}
+.heat-legend i{width:13px;height:13px;border-radius:4px;display:inline-block}
+
+.archived-banner{
+  display:flex;align-items:center;gap:9px;padding:9px 13px;background:var(--navy-soft);
+  border:1px solid #D3DFEC;border-radius:var(--radius-sm);font-size:12.5px;color:var(--navy);margin-bottom:16px;
+}
+.archived-banner svg{width:15px;height:15px;flex:0 0 15px}
+
+/* 弹窗 */
+.overlay{
+  position:fixed;inset:0;background:rgba(30,48,60,.42);z-index:100;display:none;
+  align-items:center;justify-content:center;padding:16px;
+}
+.overlay.open{display:flex}
+.modal{
+  background:var(--white);border-radius:16px;width:100%;max-width:560px;max-height:90vh;
+  display:flex;flex-direction:column;box-shadow:var(--shadow-lg);animation:pop .18s ease;
+}
+@keyframes pop{from{opacity:0;transform:scale(.97) translateY(8px)}to{opacity:1;transform:none}}
+.modal-head{padding:17px 20px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:10px}
+.modal-head h3{margin:0;font-size:16px;font-weight:700;color:var(--navy)}
+.modal-head .icon-btn{margin-left:auto}
+.modal-body{padding:18px 20px;overflow-y:auto;flex:1}
+.modal-foot{padding:14px 20px;border-top:1px solid var(--border);display:flex;gap:10px;justify-content:flex-end;flex-wrap:wrap}
+.field{margin-bottom:15px}
+.field:last-child{margin-bottom:0}
+.field label{display:block;font-size:12.5px;font-weight:600;color:var(--text-2);margin-bottom:6px}
+.field label .req{color:var(--red);margin-left:2px}
+.field input[type=text],.field input[type=number],.field input[type=date],.field select,.field textarea{
+  width:100%;padding:10px 12px;border:1px solid var(--border-2);border-radius:var(--radius-sm);
+  background:var(--white);font-size:16px;outline:none;transition:border-color .15s,box-shadow .15s;min-height:44px;
+}
+.field textarea{min-height:88px;resize:vertical;line-height:1.6}
+.field input:focus,.field select:focus,.field textarea:focus{border-color:var(--navy-2);box-shadow:0 0 0 3px rgba(44,82,130,.1)}
+.field input.err,.field textarea.err,.field select.err{border-color:var(--red);box-shadow:0 0 0 3px rgba(200,90,79,.1)}
+.field .f-err{font-size:11.5px;color:var(--red);margin-top:5px;display:none}
+.field .f-err.show{display:block}
+.field-row{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+.field-help{font-size:11.5px;color:var(--muted);margin-top:5px}
+.tag-input{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.tag-input input{flex:1;min-width:130px}
+.tag-chip{
+  display:inline-flex;align-items:center;gap:5px;background:var(--navy-soft);color:var(--navy-2);
+  padding:5px 8px;border-radius:8px;font-size:12.5px;font-weight:600;
+}
+.tag-chip button{width:15px;height:15px;display:flex;align-items:center;justify-content:center;color:var(--navy-2);opacity:.6}
+.tag-chip button:hover{opacity:1}
+.tag-chip svg{width:10px;height:10px}
+.range-wrap{display:flex;align-items:center;gap:12px}
+.range-wrap input[type=range]{flex:1;accent-color:var(--green);height:26px}
+.range-val{font-size:14px;font-weight:700;color:var(--navy);min-width:44px;text-align:right}
+
+/* Toast */
+.toast-wrap{position:fixed;top:16px;left:50%;transform:translateX(-50%);z-index:200;display:flex;flex-direction:column;gap:8px;align-items:center;pointer-events:none}
+.toast{
+  background:var(--navy);color:#fff;padding:10px 16px;border-radius:22px;font-size:13px;font-weight:600;
+  box-shadow:var(--shadow-lg);display:flex;align-items:center;gap:8px;animation:tin .22s ease;max-width:88vw;
+}
+.toast svg{width:15px;height:15px;flex:0 0 15px}
+.toast.ok{background:var(--green)}
+.toast.err{background:var(--red)}
+@keyframes tin{from{opacity:0;transform:translateY(-10px)}to{opacity:1;transform:none}}
+
+/* 底部导航（移动端） */
+.bottombar{display:none}
+.scrim{display:none;position:fixed;inset:0;background:rgba(30,48,60,.4);z-index:65}
+.scrim.open{display:block}
+
+/* 图表 */
+.chart-box{width:100%;overflow-x:auto}
+.legend-row{display:flex;gap:14px;flex-wrap:wrap;margin-top:10px;font-size:12px;color:var(--text-2)}
+.legend-row span{display:flex;align-items:center;gap:5px}
+.legend-row i{width:9px;height:9px;border-radius:3px;display:inline-block}
+
+.kv{display:flex;flex-direction:column;gap:0}
+.kv-row{display:flex;align-items:center;gap:10px;padding:11px 0;border-bottom:1px dashed var(--border)}
+.kv-row:last-child{border-bottom:none}
+.kv-k{font-size:13px;color:var(--text-2);flex:1;min-width:0}
+.kv-v{font-size:14px;font-weight:700;color:var(--navy);white-space:nowrap}
+.kv-d{font-size:11.5px;font-weight:700;white-space:nowrap;min-width:52px;text-align:right}
+
+.pbar{height:6px;border-radius:6px;background:var(--cream-3);overflow:hidden;margin-top:6px}
+.pbar i{display:block;height:100%;border-radius:6px;background:var(--green);transition:width .3s}
+
+@media (max-width:1000px){
+  .stat-grid{grid-template-columns:repeat(2,1fr)}
+  .grid-2,.grid-2-1{grid-template-columns:1fr}
+}
+/* 桌面端：☰ 切换侧栏收起/展开 */
+@media (min-width:769px){
+  .app.side-collapsed .sidebar{display:none}
+}
+@media (max-width:768px){
+  .sidebar{
+    position:fixed;left:0;top:0;bottom:0;transform:translateX(-100%);transition:transform .25s ease;
+    width:260px;flex-basis:260px;box-shadow:var(--shadow-lg);z-index:70;
+  }
+  .sidebar.open{transform:none}
+  .mobile-brand{display:flex}
+  .content{padding:16px 14px 96px}
+  .topbar{padding:9px 14px;gap:8px}
+  .week-range{display:none}
+  .week-select{max-width:140px;font-size:13px}
+  .save-chip{display:none}
+  .stat-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .stat{padding:13px}
+  .stat-val{font-size:23px}
+  .card{padding:15px}
+  .field-row{grid-template-columns:1fr}
+  .modal{max-height:92vh}
+  .modal-foot .btn{flex:1;min-width:120px}
+  .page-title{font-size:19px}
+  .bottombar{
+    display:flex;position:fixed;left:0;right:0;bottom:0;background:rgba(255,255,255,.97);
+    backdrop-filter:blur(10px);border-top:1px solid var(--border);z-index:50;
+    padding:5px 2px calc(5px + env(safe-area-inset-bottom));
+  }
+  .bottombar button{
+    flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 2px;
+    color:var(--muted);font-size:10.5px;font-weight:600;min-height:50px;border-radius:10px;
+  }
+  .bottombar button svg{width:19px;height:19px}
+  .bottombar button.on{color:var(--navy)}
+  .row-actions .icon-btn{width:34px;height:34px}
+  .heat-cell{width:23px;height:23px}
+  /* 窄屏下双栏改为单列，避免横向溢出与操作区域过小 */
+  .dual{grid-template-columns:1fr;gap:16px}
+  .dual-head{padding:10px 12px}
+  .q-grid{grid-template-columns:repeat(2,1fr);gap:10px}
+  .q-months{grid-template-columns:1fr}
+  .energy-wrap{gap:14px}
+  .energy-score{width:74px;height:74px;flex-basis:74px;border-radius:18px}
+  .energy-score b{font-size:26px}
+  .seg button{padding:6px 11px}
+}
+@media (max-width:400px){
+  .stat-grid{grid-template-columns:1fr 1fr}
+  .q-grid{grid-template-columns:1fr 1fr}
+  .bottombar button{font-size:9px}
+  .bottombar button svg{width:18px;height:18px}
+}
+</style>
+</head>
+<body data-page-node-id="B12r4InY0J7jHbSWYFDiiI">
+
+<div class="app" id="app" data-page-node-id="v2FyBcRghD1X5cRLBIRBp1">
+  <!-- ============ 侧边栏 ============ -->
+  <aside class="sidebar" id="sidebar" data-page-node-id="LuXAnbtv7HDFl3IEHRBtS7">
+    <div class="brand" data-page-node-id="JjlnVWcvcj6xS4jwXFsn1z">
+      <div class="brand-row" data-page-node-id="bul9Oz5x71gvj0qjELDQSa">
+        <div class="brand-mark" id="brandIcon" data-page-node-id="yB0CAoCYbo87W1uAVSR4Be"></div>
+        <div data-page-node-id="h5LKxMy8jRiwxpAtRijX4B">
+          <div class="brand-name" data-page-node-id="Zi7FRfMJ981dK8oU0F0sXU">每周复盘工作台</div>
+          <div class="brand-sub" data-page-node-id="HiHqT8vE4luvh4LFLCNAJ6">Weekly Review Desk</div>
+        </div>
+      </div>
+    </div>
+    <nav class="nav" id="nav" data-page-node-id="mb5shNjkeTc2W0zMmu8Xzl"></nav>
+    <div class="sidebar-foot" data-page-node-id="1NwXrMNXwlYx8jQWxlPtun">
+      <button class="side-mini" data-act="open-settings" data-page-node-id="xEmLNbW3pF1RlQGN1smBt9">
+        <span id="sideSettingsIcon" data-page-node-id="4RrtRR5MpoggIvghvzmqc8"></span><span data-page-node-id="8YzhCZrgeAubfe5CEXQfhS">数据设置</span>
+      </button>
+    </div>
+  </aside>
+  <div class="scrim" id="scrim" data-page-node-id="FXTrsWg1qftGWwQUvO7biT"></div>
+
+  <!-- ============ 主区 ============ -->
+  <div class="main" data-page-node-id="2sYsSdDlYdAIffClsKUEJT">
+    <header class="topbar" data-page-node-id="mwHK552EShgFT7DRl0djCj">
+      <button class="icon-btn" data-act="toggle-menu" id="menuBtn" aria-label="菜单" data-page-node-id="mRrzCryF5xdxDMkJPRrksC"><span id="menuIcon" data-page-node-id="RDpEaSo4sbCC10TeMcWeAR"></span></button>
+      <div class="mobile-brand" data-page-node-id="Qtx3vsEdsF6Xg2mwhm3QJh"><span id="mbIcon" data-page-node-id="wTuUKEonFWHNMBEtyGXiIq"></span> 每周复盘</div>
+      <div class="week-nav" data-page-node-id="zFNezVbqNeFIQqKTvOrJbm">
+        <button class="icon-btn" data-act="week-prev" aria-label="上一周" data-page-node-id="F94oA4OjfnuEpMjuvBFNYO"><span id="prevIcon" data-page-node-id="E5pszF9DKPwjWZHNNMLqbz"></span></button>
+        <select class="week-select" id="weekSelect" aria-label="选择周次" data-page-node-id="pD5jRYjSYyXeRGzoih2dVo"></select>
+        <button class="icon-btn" data-act="week-next" aria-label="下一周" data-page-node-id="jjhknq4paYX6sWO3tE6EKm"><span id="nextIcon" data-page-node-id="ZNHj1ovhmPygDtMSMAwWQO"></span></button>
+        <span class="week-range" id="weekRange" data-page-node-id="SuFd2XAGLFservBa4pIl68"></span>
+      </div>
+      <div class="topbar-right" data-page-node-id="DFTnWLAcbeSrB0uLHA76xD">
+        <span class="save-chip" data-page-node-id="z0c5TKrAYKXwNueADbyitF"><i class="dot" data-page-node-id="ro1EsG99nDl7pGS3UT91Zr"></i><span id="saveTime" data-page-node-id="Qui0hsZNxz5VVJNIh6bNuK">尚未保存</span></span>
+        <button class="btn btn-sm" data-act="archive-week" id="archiveBtn" data-page-node-id="nnbMDlX3AMl1OwIFBj1Xe7"><span id="archIcon" data-page-node-id="tMOgXVMYDuCS7cZK3jGgHN"></span><span id="archText" data-page-node-id="ale8ZB8NDcnyonl0ZvWINr">归档本周</span></button>
+        <button class="btn btn-primary btn-sm" data-act="open-settings" data-page-node-id="sGLDDC3kfgaH9J6NBDtoGw"><span id="gearIcon" data-page-node-id="BaK0AsPhlpvgLg8qrk0vNs"></span>数据设置</button>
+      </div>
+    </header>
+
+    <div class="content" data-page-node-id="HCXsjyGDch5QX2DtImcnFR">
+      <!-- ---------- 首页 ---------- -->
+      <section class="view active" id="view-home" data-page-node-id="iY8Q8Xpv7qCc3to3njH45z">
+        <div class="today" id="todayBox" data-page-node-id="YviYSaH0kTGXR07JP4ZjTC"></div>
+        <div class="page-head" data-page-node-id="D3EYYknSjnJSZtjpRBgXjp">
+          <h1 class="page-title" id="greetTitle" data-page-node-id="6kxyRNwMf64MCW9mJHQfZk">你好</h1>
+          <p class="page-desc" id="greetSub" data-page-node-id="dWifSIYQDlvGUi1gpDOQbg"></p>
+        </div>
+        <div class="stat-grid" id="homeStats" data-page-node-id="gaLWV1kGt9h68xibBqWejX"></div>
+        <div class="grid-2-1" style="margin-top:16px" data-page-node-id="Cb6hR76NfK0Z48544XmqpZ">
+          <div data-page-node-id="VYcw46E8GLAVHb6XXxNhtd">
+            <div class="card" data-page-node-id="ZpYe7tuna8PnaTB0PiH1Gx">
+              <div class="card-head" data-page-node-id="2KU0oOZ7fwZtvBF9aCOBOE">
+                <h2 class="card-title" data-page-node-id="S0FcWxmarNhetdZP2t4HPI"><span id="icChart" data-page-node-id="zAJ3xQ8sBLRTM6CncQ87Cq"></span>近 8 周完成数趋势</h2>
+                <span class="spacer" data-page-node-id="OUTRZ7ecDaFtUnRR2GYihX"></span><span class="hint" data-page-node-id="igegIhWy6Gl3GwAPmgKamq">点击切换其它周</span>
+              </div>
+              <div id="trendChart" class="chart-box" data-page-node-id="tYMo06x1mY6azrdswzGb3F"></div>
+            </div>
+            <div class="card" data-page-node-id="NEnRBCQwlLGzmHPK59k6f2">
+              <div class="card-head" data-page-node-id="KEL7yvFSjVpbEbmk4bOT6C">
+                <h2 class="card-title" data-page-node-id="K8c2LGiDvEWOr2SzLP5cXV"><span id="icFlag" data-page-node-id="lR1C4IDVTe86HVlNrVwDTN"></span>年度周复盘索引</h2>
+                <span class="spacer" data-page-node-id="LzZZXSvWTvGCClS7oY66ap"></span>
+                <span class="hint" id="yearLabel" data-page-node-id="8RiodaWjeSy898YAK0XVU0"></span>
+              </div>
+              <div class="heat" id="yearHeat" data-page-node-id="C1iDsHuaU6YcaotqSpyG4u"></div>
+              <div class="heat-legend" data-page-node-id="l0fpIJKG0cattF6VVYWPD9">
+                <span data-page-node-id="DQMXNlwk48ctEamECyir1a">本周记录量：</span>
+                <i style="background:#EFEADE" data-page-node-id="bpBgVpJZgY5OjVeDAtQf8Z"></i>无
+                <i style="background:#CBE3D7" data-page-node-id="8egZ81aS2AHEC7bxx4fiQU"></i>少
+                <i style="background:#83C4A6" data-page-node-id="OiM5ZQdg4XZTcVFQTBLtMI"></i>中
+                <i style="background:#3E9B72" data-page-node-id="GVzvvJ9qQiSEq7eU1uEOHF"></i>多
+                <i style="background:#1E3A5F" data-page-node-id="6IMmFh4tvUq9i3KJv7U8d7"></i>已归档
+              </div>
+            </div>
+          </div>
+          <div data-page-node-id="XraH5bT9Sj80IolU2TLDhF">
+            <div class="card" data-page-node-id="WQ2I4DCsVmG1bMGjFoIcA0">
+              <div class="card-head" data-page-node-id="lq2IwDCwoGafHlpwlScCCm"><h2 class="card-title" data-page-node-id="lQU8VDrZlB3aByxagVHXdU"><span id="icStar2" data-page-node-id="X1mEGnfx3q88GcEcEqL14z"></span>高光事件</h2>
+                <span class="spacer" data-page-node-id="POaiFi0HHUqW3ieUDFdC3e"></span>
+                <button class="btn btn-sm" data-act="add" data-kind="highlights" data-page-node-id="Elkob2CsCBzg6bf8hjeSiq">新增</button>
+              </div>
+              <div id="homeHighlights" data-page-node-id="GCBXQO6fxnQWHaUebv9vAN"></div>
+            </div>
+            <div class="card" data-page-node-id="vbMAvEkHBzASvkC4pK95M1">
+              <div class="card-head" data-page-node-id="vyLYVrxGwyACowAFJ76XIi"><h2 class="card-title" data-page-node-id="FeFJ5SO7OfbHt1yCLXoBlt"><span id="icAlert" data-page-node-id="bLkV5C9nXFQ8zOeDATQmji"></span>未完成事项</h2>
+                <span class="spacer" data-page-node-id="oGaRT2e9rQUmMMVmngSgAu"></span>
+                <button class="btn btn-sm" data-act="add" data-kind="tasks" data-page-node-id="FWJC0E2psYvuDieHt2J90Z">新增</button>
+              </div>
+              <div id="homeUndone" data-page-node-id="eqVPFGxIltwVE9HGtIiDrF"></div>
+            </div>
+            <div class="card" data-page-node-id="8ilVNDsZD3Dqg5OoiuNfg6">
+              <div class="card-head" data-page-node-id="lErclhZ5j2pGqf1mLb4duz"><h2 class="card-title" data-page-node-id="3I1YO9HRiUQlbECYLWjim8"><span id="icFlag2" data-page-node-id="iuUehmMNdS1J6BXyhuEPre"></span>下周重点</h2>
+                <span class="spacer" data-page-node-id="5CPN7ZrdL3G6vgTYnTkGsD"></span>
+                <button class="btn btn-sm" data-act="add" data-kind="plans" data-page-node-id="zfG5dL0uEA4y3iFxpoJfKC">新增</button>
+              </div>
+              <div id="homePlans" data-page-node-id="YwxMC7xWABzGGbGBICEBeA"></div>
+            </div>
+            <div class="card" data-page-node-id="4PM47M4Yb5LaUGBVHRyfny">
+              <div class="card-head" data-page-node-id="C2phKQq5IqkebBTMIu2aec"><h2 class="card-title" data-page-node-id="oZb6BB9INSnm2OI2ijfZIW"><span id="icClock" data-page-node-id="98ssuEYCg79yBwlShp2BIu"></span>最近操作</h2></div>
+              <div id="homeRecent" data-page-node-id="C4KUQACAMoeBIVF6ZpNVId"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- 本周数据 ---------- -->
+      <section class="view" id="view-data" data-page-node-id="fRBFJlBmz8i5fssxLhFVcN">
+        <div class="page-head" data-page-node-id="JIuhhDKUbAfxFMuoeOGCE8">
+          <h1 class="page-title" data-page-node-id="xxuUC2ZEgxfP26Wyt75Lot">本周数据</h1>
+          <p class="page-desc" data-page-node-id="qVLOQ0EI2VwBl3R4Jz6CAc">记录本周目标、关键指标与上周对比，所有数据实时计算。</p>
+        </div>
+        <div class="card" data-page-node-id="EyeLwJ9rvVkEGmVYxlSdDZ">
+          <div class="card-head" data-page-node-id="0YEYLGUrpoZAgDsvs7WL9C">
+            <h2 class="card-title" data-page-node-id="UxQiW7U1HCvqUyhvIcODFW"><span id="icTarget" data-page-node-id="Rg6tMRbwdnzCHKkllFTcbb"></span>本周目标与完成率</h2>
+            <span class="spacer" data-page-node-id="uHrWipaEvTggVkDhMuGZch"></span>
+            <button class="btn btn-sm" data-act="edit-review" data-page-node-id="46gaf2BFRS6GoxzABaYnfj">编辑目标</button>
+          </div>
+          <div class="grid-2" style="align-items:center" data-page-node-id="VnlJof9Bven8WjiPnULUqD">
+            <div id="reviewBlock" data-page-node-id="QiWjnEDCABogYAK3LyhGei"></div>
+            <div id="goalDonut" style="display:flex;justify-content:center" data-page-node-id="V5qdsS41D0LWcDX8BztCLT"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <h2 class="card-title"><span id="icSun"></span>周能量评分</h2>
+            <span class="spacer"></span>
+            <span class="hint" id="energyHint"></span>
+            <button class="btn btn-sm" data-act="edit-review">填写本周能量</button>
+          </div>
+          <div class="energy-wrap">
+            <div id="energyScore"></div>
+            <div class="energy-meta" id="energyMeta"></div>
+          </div>
+          <div class="chart-box" id="energyTrend" style="margin-top:14px"></div>
+        </div>
+        <div class="card" data-page-node-id="px8aViHEmnXBOB7ut5cie4">
+          <div class="card-head" data-page-node-id="f15BYLrTOdwYIA0esYyDMa">
+            <h2 class="card-title" data-page-node-id="eNBN5rnqSLwEIRI3InnfBx"><span id="icChart2" data-page-node-id="eQkWnXbbiVBOotx8XDEYZK"></span>关键数据</h2>
+            <span class="spacer" data-page-node-id="4BGJb8E96qXmTyEiItkpvR"></span>
+            <button class="btn btn-primary btn-sm" data-act="add" data-kind="metrics" data-page-node-id="FhIH8X9TkaIFbeeoaAQBgm"><span id="icPlus" data-page-node-id="lYGDtzOLWBOhDu1SD7dTx7"></span>新增指标</button>
+          </div>
+          <div class="toolbar" data-page-node-id="CE0euA9mSGWog8lW1hz3Vy">
+            <div class="seg js-domseg"><button type="button" data-act="set-domain" data-dom="all">全部</button><button type="button" data-act="set-domain" data-dom="工作">工作</button><button type="button" data-act="set-domain" data-dom="生活">生活</button></div>
+            <div class="search" data-page-node-id="LlACDFfieWRkDzDRQAAr1T"><span id="icSearch" data-page-node-id="tWue4fE6us7lGQnfUENfJa"></span><input type="text" id="q-metrics" placeholder="搜索指标名称…" data-filter="metrics" data-page-node-id="YrD04IjnrvP1UbHYA6HTMq"></div>
+            <select class="filter-sel" id="f-metrics-type" data-filter="metrics" data-page-node-id="xKMQPDF8SHxXHYk5DaiiUP">
+              <option value="" data-page-node-id="5B7nvjN5K3EZB7BCMfJuVs">全部类型</option>
+            </select>
+            <select class="filter-sel" id="f-metrics-sort" data-sort="metrics" data-page-node-id="U2ZpDgjdVtRiwtCniGUZib">
+              <option value="new" data-page-node-id="oeE5gAM0toZrBbo0SnP50F">最新在前</option>
+              <option value="old" data-page-node-id="c5inwwsaJvUQeyif3HvDR7">最早在前</option>
+              <option value="value-desc" data-page-node-id="scARqXHWwEsrgTgOma29pT">数值高→低</option>
+              <option value="value-asc" data-page-node-id="k56WgkdEiz7OHFUBYcrDPR">数值低→高</option>
+              <option value="rate-desc" data-page-node-id="WeQo6Pnu8ziD8wR5hdS0eb">达成率高→低</option>
+            </select>
+          </div>
+          <div id="metricsList" data-page-node-id="JxUzWjLyfoU0FFzNlgLP67"></div>
+        </div>
+        <div class="grid-2" data-page-node-id="H8YGYGv0Yj6OddBPMhy6du">
+          <div class="card" data-page-node-id="hdyHsULIvCSjfS4rUXfkHr">
+            <div class="card-head" data-page-node-id="ww06fKnUtZ3NrB5b8DXRwN"><h2 class="card-title" data-page-node-id="HcAgrMVkB7kmC6Pz7yeFve"><span id="icChart3" data-page-node-id="VYfQ1XAhSrQHHqcDCODUaE"></span>指标达成率</h2></div>
+            <div class="chart-box" id="metricBars" data-page-node-id="iKKIAXkStNrJZ9Ylh89uF2"></div>
+          </div>
+          <div class="card" data-page-node-id="pBLEQLpVCQqaYcQEDwyfCb">
+            <div class="card-head" data-page-node-id="AwYbzzXsCWeXF3pX63Bim6"><h2 class="card-title" data-page-node-id="Gc090tneLZIGvxGXy0CX21"><span id="icCompare" data-page-node-id="6gIRp1QmlJRcrbE0neejAW"></span>上周对比</h2></div>
+            <div id="metricCompare" data-page-node-id="vwPL405gHQX2IM9zejyDg2"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- 完成清单 ---------- -->
+      <section class="view" id="view-tasks" data-page-node-id="VQExQumsal5iVTYAXQg42z">
+        <div class="page-head" data-page-node-id="tkgk6vvriRzsCeqckmzRNP">
+          <h1 class="page-title" data-page-node-id="BX0g2WinLFng6TzxLKCgji">完成清单</h1>
+          <p class="page-desc" data-page-node-id="Nqa8QPUSe4AvlFthuNcE9q">维护本周完成事项及其分类、标签、状态与备注。</p>
+        </div>
+        <div class="card" data-page-node-id="wuJnMi0tZG0l9idOBabpMr">
+          <div class="card-head" data-page-node-id="v0c7rjHUR6owuKYdfMS1gb">
+            <h2 class="card-title" data-page-node-id="NBrAD7OWUxx2H9FLF9s0Sz"><span id="icCheck" data-page-node-id="ZLEP7cWX5mILVviExGWXLe"></span>事项清单</h2>
+            <span class="spacer" data-page-node-id="yT0cLKWw4LlqXPiZyCf8k9"></span>
+            <span class="hint" id="taskSummary" data-page-node-id="YlhZSs42co3plfAEZXTy0l"></span>
+            <button class="btn btn-primary btn-sm" data-act="add" data-kind="tasks" data-page-node-id="uVi3ZDH267WVqKGB3NlhAB"><span id="icPlus2" data-page-node-id="JHj1w5WeVCjj3kT8YyaMnX"></span>新增事项</button>
+          </div>
+          <div class="toolbar" data-page-node-id="GbIPxngIBB6N76BAaTyhZu">
+            <div class="seg js-domseg"><button type="button" data-act="set-domain" data-dom="all">全部</button><button type="button" data-act="set-domain" data-dom="工作">工作</button><button type="button" data-act="set-domain" data-dom="生活">生活</button></div>
+            <div class="search" data-page-node-id="uJQcDmfJmK7S36IohoPa2j"><span id="icSearch2" data-page-node-id="LVuHioDw5Ns3PqyhX2IWiX"></span><input type="text" id="q-tasks" placeholder="搜索事项、标签、备注…" data-filter="tasks" data-page-node-id="UKhREVGWMTO20m0xUny1BS"></div>
+            <select class="filter-sel" id="f-tasks-cat" data-filter="tasks" data-page-node-id="23jS3Eh2G3HOx6T9IzttLO"><option value="" data-page-node-id="hDmXQgiJxh9UFflVHm7jQd">全部分类</option></select>
+            <select class="filter-sel" id="f-tasks-status" data-filter="tasks" data-page-node-id="h6OlKaK3hJlicO61WnCkEK">
+              <option value="" data-page-node-id="H6N7cg2lNSIoFbLMEotBax">全部状态</option><option value="待开始" data-page-node-id="GF0ASOP7SYhwKpMtYDQVYC">待开始</option><option value="进行中" data-page-node-id="0CDLVET5kCc2KL8xVie7x4">进行中</option><option value="已完成" data-page-node-id="SEkLphXDAfboUIsPEOtRss">已完成</option>
+            </select>
+            <select class="filter-sel" id="f-tasks-sort" data-sort="tasks" data-page-node-id="k8J4jvzAC0KItvIWw7rRA8">
+              <option value="new" data-page-node-id="FKJGLKjNBYulqMOS3URLGm">最新在前</option><option value="old" data-page-node-id="Imm9KiXw1VEKCXmHaD1CM9">最早在前</option>
+              <option value="status" data-page-node-id="jE1ijYtBFDhRQWvoJQzFdP">按状态</option><option value="cat" data-page-node-id="95bI0uAoogeLAxqA5DPISm">按分类</option><option value="progress" data-page-node-id="jTtuAi72Ia0qte7wLdzhFn">按进度</option>
+            </select>
+          </div>
+          <div class="list" id="tasksList" data-page-node-id="jbaAsdXqCoq4EMPVpdK5Wd"></div>
+        </div>
+        <div class="grid-2" data-page-node-id="Y5TEN9lNFZafX82pt7dQjg">
+          <div class="card" data-page-node-id="lS2eCNYNtuyeS1HYqV764M">
+            <div class="card-head" data-page-node-id="xz8QXGLt2wzDy9qeqSBkcP"><h2 class="card-title" data-page-node-id="JPHBL1DjvsMvDvqFhlqV70"><span id="icChart4" data-page-node-id="CYqR98OwcPrM7eA9pYhpXj"></span>分类分布</h2></div>
+            <div class="chart-box" id="taskCats" data-page-node-id="UbVsCEaLABktZXpE1HZWcd"></div>
+          </div>
+          <div class="card" data-page-node-id="KyG7AYMeTnkLmB7h3mOFxT">
+            <div class="card-head" data-page-node-id="0c7gqyXw9KGfkZFDOXE78N"><h2 class="card-title" data-page-node-id="pHSSFLxExmtxpAU0lHq7Gc"><span id="icCompare2" data-page-node-id="ruZWRl83sE5IYXRfknrLFx"></span>近 8 周完成数</h2></div>
+            <div class="chart-box" id="taskTrend" data-page-node-id="sREBLEj6ISPScRWcEWuYMn"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- 亮点问题 ---------- -->
+      <section class="view" id="view-hl" data-page-node-id="MgSALtWEIZlfovac1tPBZy">
+        <div class="page-head" data-page-node-id="qpaOkzsKM7TzxHxe2YTBOR">
+          <h1 class="page-title" data-page-node-id="tvd3WBLyDTmTSqbAKFjBvJ">亮点问题</h1>
+          <p class="page-desc" data-page-node-id="wlRcdY4eRkvezK0qvUv3zD">记录本周高光时刻与遇到的问题、原因分析和处理状态。</p>
+        </div>
+        <div class="card" data-page-node-id="N7eiHzjTEwJ4JUsAxFEoPb">
+          <div class="card-head" data-page-node-id="yYsIdsesRFvVMjq9nFlese">
+            <h2 class="card-title" data-page-node-id="qNkQI9dBYBLJEabJcUAZwW"><span id="icStar" data-page-node-id="wYPpKAVXH9k45VfIDEHrQG"></span>高光时刻</h2>
+            <span class="spacer" data-page-node-id="EiYO7RNQHpSAoo6EV8cVYE"></span>
+            <button class="btn btn-primary btn-sm" data-act="add" data-kind="highlights" data-page-node-id="LsJW1GFTNR03cu45u1gfE5">新增高光</button>
+          </div>
+          <div class="toolbar" data-page-node-id="mz5wsDOunVqyuNCE4onf8u">
+            <div class="seg js-domseg"><button type="button" data-act="set-domain" data-dom="all">全部</button><button type="button" data-act="set-domain" data-dom="工作">工作</button><button type="button" data-act="set-domain" data-dom="生活">生活</button></div>
+            <div class="search" data-page-node-id="hFmgqCn60qySGsH1w2LenS"><span id="icSearch3" data-page-node-id="CGP0QbmcN7yMflYLgYhWdI"></span><input type="text" id="q-highlights" placeholder="搜索高光…" data-filter="highlights" data-page-node-id="G5dvaGzsYRa3UgupAb49dZ"></div>
+            <select class="filter-sel" id="f-hl-sort" data-sort="highlights" data-page-node-id="ib0oHUsMNzKxDiENZlNctP">
+              <option value="score" data-page-node-id="IkKEvFgvXkmCrgvXeLvmVe">按价值分</option><option value="new" data-page-node-id="j7Ye7eaG9ArzHSEcaAFPs9">最新在前</option><option value="old" data-page-node-id="FawqfK2EgGCL2oDmB4i35x">最早在前</option>
+            </select>
+          </div>
+          <div class="list" id="hlList" data-page-node-id="Xob02LUTWZiOIPDqipNQee"></div>
+        </div>
+        <div class="card" data-page-node-id="2ZfK2P2JBicVBLmf4CyJuL">
+          <div class="card-head" data-page-node-id="mfyCaHHiRA38GDmfOititX">
+            <h2 class="card-title" data-page-node-id="XX6XEmTe7hQoibDTlI8tiN"><span id="icAlert2" data-page-node-id="YiaGOozDyMGf0qBwdIkwpD"></span>问题与原因</h2>
+            <span class="spacer" data-page-node-id="ko679NryPlahAUfgEvWVpP"></span>
+            <span class="hint" id="issueSummary" data-page-node-id="9XzuKjQZ3RGXxVlP5GndU0"></span>
+            <button class="btn btn-primary btn-sm" data-act="add" data-kind="issues" data-page-node-id="k7kNZ6TEs0niqgf6pNfmKp">新增问题</button>
+          </div>
+          <div class="toolbar" data-page-node-id="s9KkDboifaWZST6DYQoIEb">
+            <div class="seg js-domseg"><button type="button" data-act="set-domain" data-dom="all">全部</button><button type="button" data-act="set-domain" data-dom="工作">工作</button><button type="button" data-act="set-domain" data-dom="生活">生活</button></div>
+            <div class="search" data-page-node-id="iUH5gKJnwGqMdf27icnkEa"><span id="icSearch4" data-page-node-id="CPlynaq55Z11UkVuQ4rmTQ"></span><input type="text" id="q-issues" placeholder="搜索问题、原因…" data-filter="issues" data-page-node-id="heR6aB4vHlLXNhBxuR8k8N"></div>
+            <select class="filter-sel" id="f-issues-status" data-filter="issues" data-page-node-id="jvFDcmljpZmMlX1NO73LPP">
+              <option value="" data-page-node-id="AhDiFOGQHg0akvDCGMdP9D">全部状态</option><option value="待处理" data-page-node-id="1wlkJmSLyO8Bh49RAhGnoq">待处理</option><option value="处理中" data-page-node-id="y8Cq9whLDowqGu8ciI6nQ2">处理中</option><option value="已解决" data-page-node-id="yUb0NGSdRMbMCpwCqP77Cf">已解决</option>
+            </select>
+            <select class="filter-sel" id="f-issues-sort" data-sort="issues" data-page-node-id="hjUA4BGP329mEmolZsghVz">
+              <option value="new" data-page-node-id="YnBJlXmEx0OKPFSdKaunPn">最新在前</option><option value="old" data-page-node-id="szMXROpDuX9t2fUIrq0XVq">最早在前</option>
+              <option value="impact" data-page-node-id="cbOE0AOH25ELG6W4PM2K4s">按影响程度</option><option value="status" data-page-node-id="7XcqrdUrYbJ9eyOIPIHeAx">按状态</option>
+            </select>
+          </div>
+          <div class="list" id="issueList" data-page-node-id="zqOQqLCrWbbCk7Tocym363"></div>
+        </div>
+      </section>
+
+      <!-- ---------- 经验沉淀 ---------- -->
+      <section class="view" id="view-lessons" data-page-node-id="xUqk9jNH1EGCdfRzUFvS6u">
+        <div class="page-head" data-page-node-id="PPkyQKSU6WvDx7XqaeM9Xi">
+          <h1 class="page-title" data-page-node-id="Eg7kexqK1TwDioBJtxqsrb">经验沉淀</h1>
+          <p class="page-desc" data-page-node-id="5ew8iRLMETlCh7V6X3zcZ5">沉淀可复用的经验、踩过的坑，以及下阶段要停止的事项。</p>
+        </div>
+        <div class="card" data-page-node-id="pxPLXac17rRFM8lSyplurC">
+          <div class="card-head" data-page-node-id="rXrZnX3V8XhOGG8rnlMqCu">
+            <h2 class="card-title" data-page-node-id="HIUkv33ypYbcVY4sGypcIC"><span id="icBook" data-page-node-id="kvKF0LNrEEHnrr5VnT0DgR"></span>经验库</h2>
+            <span class="spacer" data-page-node-id="prK5wLGqIENc0dwfb3HsOW"></span>
+            <button class="btn btn-primary btn-sm" data-act="add" data-kind="lessons" data-page-node-id="AZRNLYEhaQNMv8fyOLshWk">新增经验</button>
+          </div>
+          <div class="toolbar" data-page-node-id="zChPUgdwNA1Jmf4IIiCauq">
+            <div class="seg js-domseg"><button type="button" data-act="set-domain" data-dom="all">全部</button><button type="button" data-act="set-domain" data-dom="工作">工作</button><button type="button" data-act="set-domain" data-dom="生活">生活</button></div>
+            <div class="search" data-page-node-id="I4qJUCLBBkvz0HchoEDDZ5"><span id="icSearch5" data-page-node-id="aybUqqGzUgNHBQkt9hx27g"></span><input type="text" id="q-lessons" placeholder="搜索经验、标签、内容…" data-filter="lessons" data-page-node-id="nBbdfJ1DtNd0frcKdfcDWA"></div>
+            <select class="filter-sel" id="f-lessons-type" data-filter="lessons" data-page-node-id="oGtHWVnGBFG3fElz3S5TKC">
+              <option value="" data-page-node-id="pzyebPQVKVEi3CHHaoqlFM">全部类型</option><option value="经验" data-page-node-id="plAAR82AzUdbWT8c2rnAhs">经验</option><option value="教训" data-page-node-id="qbcY7D9q9gJepsyyfbgr8e">教训</option><option value="停止事项" data-page-node-id="yIZmw1HkEh6EWiDYizReiR">停止事项</option>
+            </select>
+            <select class="filter-sel" id="f-lessons-sort" data-sort="lessons" data-page-node-id="PKAGYtoELOvB0Uig64CDzP">
+              <option value="new" data-page-node-id="WD7lQt6L6KCzfCAgyPE9eL">最新在前</option><option value="old" data-page-node-id="2JwOJcFeGoqDDtHNyRDxMf">最早在前</option>
+              <option value="reuse" data-page-node-id="uSX3cXWPEaHwVYHVr5ROBF">按可复用度</option><option value="type" data-page-node-id="PjEHCHNPqQlJatHHQWbzzd">按类型</option>
+            </select>
+          </div>
+          <div class="list" id="lessonsList" data-page-node-id="N5C3uwULnbcKhlgZ7HzjqD"></div>
+        </div>
+        <div class="card" data-page-node-id="EEoBV8fEzEUPgz99Lfpu5y">
+          <div class="card-head" data-page-node-id="Siuzg3fOtWb9HTYm2PCc9t">
+            <h2 class="card-title" data-page-node-id="OFg2xyCDXUthouFej5Vf1r"><span id="icSparkle" data-page-node-id="NBqTxJLJ84OjHECoeUYqat"></span>一键生成复盘草稿</h2>
+            <span class="spacer" data-page-node-id="xL0DqOETE0nDIpOLsWyJBM"></span>
+            <button class="btn btn-sm" data-act="gen-draft" data-page-node-id="nPDIKJ1fvNNRb2Izuvq0Il">生成草稿</button>
+            <button class="btn btn-sm" data-act="copy-draft" data-page-node-id="4pE7AedLKDNMiKBRlJP1vI">复制文本</button>
+          </div>
+          <p class="hint" style="margin:-4px 0 10px" data-page-node-id="GJFZOYgnQOuwCyTIqxJA7t">基于本周真实录入的数据，按预设模板组合成可编辑草稿（本地生成，不调用任何外部接口）。</p>
+          <textarea id="draftBox" style="width:100%;min-height:230px;padding:12px;border:1px solid var(--border-2);border-radius:var(--radius-sm);font-size:14px;line-height:1.75;outline:none;resize:vertical" placeholder="点击「生成草稿」，将自动汇总本周目标、完成事项、关键数据、高光、问题、经验与下周行动。"></textarea>
+        </div>
+      </section>
+
+      <!-- ---------- 下周计划 ---------- -->
+      <section class="view" id="view-plans" data-page-node-id="XvMDIevutbHIhpwLzZjYCq">
+        <div class="page-head" data-page-node-id="aqZwuq50Uf14tCmlTcRGq2">
+          <h1 class="page-title" data-page-node-id="QZW2IOysCupPfJlPHJvU09">下周计划</h1>
+          <p class="page-desc" data-page-node-id="Wh2z2d0UjhvpxNQY7bWGoE">规划下周行动项，支持日期、优先级、状态与进度管理。</p>
+        </div>
+        <div class="card" data-page-node-id="78ZoIsXMxXzYE4EynXHGeN">
+          <div class="card-head" data-page-node-id="014hvSDBa3JY0vGlYjkWgr">
+            <h2 class="card-title" data-page-node-id="IkeD5KYDzBbYV9AFhpf6wL"><span id="icFlag3" data-page-node-id="h9mqSGYJD9tGVQWC0O8sFL"></span>行动项</h2>
+            <span class="spacer" data-page-node-id="SYzoCyR6i1o9ie1o2BtkxM"></span>
+            <button class="btn btn-sm" data-act="migrate" data-page-node-id="iI48YogdNOUPZkoml9CyE9">从本周迁移未完成</button>
+            <button class="btn btn-primary btn-sm" data-act="add" data-kind="plans" data-page-node-id="66PTSB7do9K2ydpyc27jg3">新增计划</button>
+          </div>
+          <div class="toolbar" data-page-node-id="miZ2QfEjVij4ZPGOqQrAAC">
+            <div class="seg js-domseg"><button type="button" data-act="set-domain" data-dom="all">全部</button><button type="button" data-act="set-domain" data-dom="工作">工作</button><button type="button" data-act="set-domain" data-dom="生活">生活</button></div>
+            <div class="search" data-page-node-id="0MEo6tjzotwFkYpBgVzHqR"><span id="icSearch6" data-page-node-id="rBM0eJFbDOxmqJc4LU890L"></span><input type="text" id="q-plans" placeholder="搜索计划…" data-filter="plans" data-page-node-id="ViEYlr7RerUk17BNqPziBA"></div>
+            <select class="filter-sel" id="f-plans-priority" data-filter="plans" data-page-node-id="IBr6tFuzLoN8AAjcZTDADl">
+              <option value="" data-page-node-id="9qERnhqIAFJcWZy3Kc6YNq">全部优先级</option><option value="P0" data-page-node-id="68s3ZfwjaAMZ33V8KTjDvq">P0 最高</option><option value="P1" data-page-node-id="8KUIdcczpl0As7ovmN6RhS">P1 高</option><option value="P2" data-page-node-id="YgRHzuW2zApMFgwjW4plZI">P2 中</option><option value="P3" data-page-node-id="29p7PDAexOGiSGqMTSuAXT">P3 低</option>
+            </select>
+            <select class="filter-sel" id="f-plans-status" data-filter="plans" data-page-node-id="Jk7tXIEynP1hqS0nFT0ehp">
+              <option value="" data-page-node-id="x3f96hsowNquQgrlqUjPdo">全部状态</option><option value="待开始" data-page-node-id="G7qwFJUugrCtAXque0Gp8l">待开始</option><option value="进行中" data-page-node-id="8DRhzjrzdp0xJEZ1llkJ9H">进行中</option><option value="已完成" data-page-node-id="ODzSkE5T87zmFTJbRBGDMl">已完成</option>
+            </select>
+            <select class="filter-sel" id="f-plans-sort" data-sort="plans" data-page-node-id="HHQR0fjCXJaTZc8oqrLM4v">
+              <option value="priority" data-page-node-id="czHU4KY2avW7mWdX4wh9RX">按优先级</option><option value="date" data-page-node-id="fAdeAztC0qv46deowqd6jG">按日期</option>
+              <option value="new" data-page-node-id="IPo5KvXdejA4NKjCNvryHE">最新在前</option><option value="old" data-page-node-id="oXkwRMYynRlMjyWfhQaLSx">最早在前</option><option value="progress" data-page-node-id="LepGQ1fPKnE4jLFTGvLHsF">按进度</option>
+            </select>
+          </div>
+          <div class="list" id="plansList" data-page-node-id="mtOGHCc2BkjSrhw0uueekM"></div>
+        </div>
+        <div class="grid-2" data-page-node-id="aGTqLQZu4KCUZKAWY1RKnB">
+          <div class="card" data-page-node-id="r9MdxrcKUpKSpb2MMpCAIq">
+            <div class="card-head" data-page-node-id="2UDAYQIgRZKQHv9KUFuhw3"><h2 class="card-title" data-page-node-id="ujZpdhF5fH6l5GBeEzUF7Z"><span id="icChart5" data-page-node-id="Eo5SwRHPcu6qN8a1yMtWBk"></span>优先级分布</h2></div>
+            <div class="chart-box" id="planPriority" data-page-node-id="5dTvx7lKk62CrwRr3Sdn6T"></div>
+          </div>
+          <div class="card" data-page-node-id="WxorERGyuvafKmtl3f3HxI">
+            <div class="card-head" data-page-node-id="bJHWusnZazdnWYXydbKvyV"><h2 class="card-title" data-page-node-id="IfkiaZk27YxyIY5qrb4Qzq"><span id="icCheck2" data-page-node-id="xpB3q3RQNeCJIN6CRQf8tJ"></span>计划完成情况</h2></div>
+            <div id="planProgress" data-page-node-id="iTSVBUjsg6Oyr8X8Z3gkru"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ---------- 季度回顾 ---------- -->
+      <section class="view" id="view-quarter">
+        <div class="page-head">
+          <h1 class="page-title">季度回顾</h1>
+          <p class="page-desc">自动汇总该季度所有周的记录，无需重复录入，一键生成季度回顾草稿。</p>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <h2 class="card-title"><span id="icLayers"></span>季度总览</h2>
+            <span class="spacer"></span>
+            <select class="filter-sel" id="q-year" aria-label="选择年份"></select>
+            <select class="filter-sel" id="q-quarter" aria-label="选择季度">
+              <option value="1">Q1（1-3 月）</option>
+              <option value="2">Q2（4-6 月）</option>
+              <option value="3">Q3（7-9 月）</option>
+              <option value="4">Q4（10-12 月）</option>
+            </select>
+          </div>
+          <p class="hint" style="margin:-6px 0 12px" id="qRangeLabel"></p>
+          <div class="q-grid" id="qStats"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2 class="card-title"><span id="icChart6"></span>季度能量与完成趋势</h2></div>
+          <div class="chart-box" id="qEnergyChart"></div>
+        </div>
+        <div class="card">
+          <div class="card-head"><h2 class="card-title"><span id="icLayers2"></span>分月回顾</h2></div>
+          <div class="q-months" id="qMonths"></div>
+        </div>
+        <div class="grid-2">
+          <div class="card">
+            <div class="card-head"><h2 class="card-title"><span id="icStar3"></span>季度高光 TOP</h2></div>
+            <div id="qHighlights"></div>
+          </div>
+          <div class="card">
+            <div class="card-head"><h2 class="card-title"><span id="icBook2"></span>经验与问题沉淀</h2></div>
+            <div id="qLessons"></div>
+          </div>
+        </div>
+        <div class="card">
+          <div class="card-head">
+            <h2 class="card-title"><span id="icSparkle2"></span>季度回顾草稿</h2>
+            <span class="spacer"></span>
+            <button class="btn btn-sm" data-act="gen-quarter-draft">生成草稿</button>
+            <button class="btn btn-sm" data-act="copy-quarter-draft">复制文本</button>
+          </div>
+          <p class="hint" style="margin:-4px 0 10px">基于该季度真实录入的周记录，按预设模板自动汇总（本地生成，不调用任何外部接口）。</p>
+          <textarea id="quarterDraftBox" style="width:100%;min-height:230px;padding:12px;border:1px solid var(--border-2);border-radius:var(--radius-sm);font-size:14px;line-height:1.75;outline:none;resize:vertical" placeholder="点击「生成草稿」，将自动汇总该季度的完成事项、关键数据、能量变化、高光、问题、经验与下季度重点。"></textarea>
+        </div>
+      </section>
+    </div>
+  </div>
+</div>
+
+<!-- 移动端底部导航 -->
+<nav class="bottombar" id="bottombar" data-page-node-id="t0vYtDj2vMGbznB4OMWgqO"></nav>
+
+<!-- 数据设置抽屉 -->
+<div class="overlay" id="settingsOverlay" data-page-node-id="WHlZpfPqhGYhez45KK5MoG">
+  <div class="modal" style="max-width:480px" data-page-node-id="XGwH7p6Y2rf05llpzoAfb3">
+    <div class="modal-head" data-page-node-id="gA6kMx1N9l6inV27jIf5IX">
+      <h3 data-page-node-id="uPktJuqA0uDD5C5q9RCc2a">数据设置</h3>
+      <button class="icon-btn" data-act="close-settings" aria-label="关闭" data-page-node-id="JBpibY4fYGCUGjhyQDIAGb"><span id="closeIcon" data-page-node-id="YgDm8Dre6nRQykyWySet6A"></span></button>
+    </div>
+    <div class="modal-body" data-page-node-id="OEZCzy3j7JAVS04jtlJ0pC">
+      <div class="card" style="box-shadow:none;margin-bottom:14px;padding:14px" data-page-node-id="3CfesfOGx5akUnud8PR5nM">
+        <div class="kv-row" data-page-node-id="EOTTReNcwPdTfRJVyllQKK"><span class="kv-k" data-page-node-id="FqUZLGA5atpKLDJaeHJ20H">最后保存时间</span><span class="kv-v" id="setSaveTime" data-page-node-id="19QAPBsUcWQT8WJcV83Vga">—</span></div>
+        <div class="kv-row" data-page-node-id="q6GRExRF1K5dyrICCn7aPH"><span class="kv-k" data-page-node-id="2AomEBvoMK5E759QE6mXyI">数据存储位置</span><span class="kv-v" style="font-size:12.5px" data-page-node-id="gdu7uv1YhA1IHgRTFgKeV9">本机浏览器 localStorage</span></div>
+        <div class="kv-row" data-page-node-id="J5NpQ1vGAUWDynMBZo0e74"><span class="kv-k" data-page-node-id="vCpxWtQgpoVCGQdikFa8eA">记录总数</span><span class="kv-v" id="setCount" data-page-node-id="p593Wi0VnAqWIBNVMFAXEF">0</span></div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:10px" data-page-node-id="iEpaBW4SkNQYlVI9LxVDhM">
+        <button class="btn" data-act="export-json" data-page-node-id="WCyq5XasD5MummcENVNVbh"><span id="dlIcon" data-page-node-id="9HtYyWkPhEqsSGadzDNllw"></span>导出 JSON 备份</button>
+        <button class="btn" data-act="import-json" data-page-node-id="YGm3D4XzlAeLDEu53tdKNe"><span id="ulIcon" data-page-node-id="Xczz2iUKMw88nodmVQQBgA"></span>导入 JSON 恢复</button>
+        <button class="btn" data-act="load-demo" data-page-node-id="OwbN4kH3sPw6wRATGU6MWL">载入示例数据</button>
+        <button class="btn btn-danger" data-act="clear-all" data-page-node-id="0Bt8ObTmqDvOkGe5TUk5Uu"><span id="trashIcon" data-page-node-id="ExU6uLhXDtw6aX6hIEEvEr"></span>清空全部数据</button>
+      </div>
+      <input type="file" id="importFile" accept="application/json,.json" style="display:none" data-page-node-id="f0zGA2Hx7Udwu51PW3EV8i">
+      <p class="hint" style="margin-top:14px;line-height:1.7" data-page-node-id="Gkk8cgqv25jEFpgsH1y0sd">
+        数据仅保存在当前浏览器，不会上传到任何服务器。更换设备或清理浏览器缓存前，请先导出 JSON 备份。<br data-page-node-id="ktiHzZKncDm9Xp7WDq6db2">
+        导入将整体覆盖现有数据（支持任意条数，无上限）。
+      </p>
+    </div>
+  </div>
+</div>
+
+<!-- 通用表单弹窗 -->
+<div class="overlay" id="formOverlay" data-page-node-id="MfosupRqAy1hoKzBRQ7F8E">
+  <div class="modal" data-page-node-id="BiAILKv8BbVvkz37RXYwBe">
+    <div class="modal-head" data-page-node-id="ouHpaENUUom6Z44Zeop815">
+      <h3 id="formTitle" data-page-node-id="7AvtyjzmXz1G9FJR3Kvrcc">新增</h3>
+      <button class="icon-btn" data-act="close-form" aria-label="关闭" data-page-node-id="yFQu8HNejAfEhLMlzP4xjl"><span id="closeIcon2" data-page-node-id="LWtXJrfykKGX5lo15FqVM7"></span></button>
+    </div>
+    <div class="modal-body" id="formBody" data-page-node-id="HltU4Ay666aDOTsoPaZuyI"></div>
+    <div class="modal-foot" data-page-node-id="bKlKc1X2wL4QqduRmM26ea">
+      <button class="btn" data-act="close-form" data-page-node-id="okPLQAqqYLVSeONJ0DpGgP">取消</button>
+      <button class="btn btn-primary" data-act="submit-form" id="formSubmit" data-page-node-id="lkDsXqh7C0AP3gnxYcD27J">保存</button>
+    </div>
+  </div>
+</div>
+
+<!-- 确认弹窗 -->
+<div class="overlay" id="confirmOverlay" data-page-node-id="fTPdDCwSnFATBfspxry1Xc">
+  <div class="modal" style="max-width:400px" data-page-node-id="zu6aF3DERvNo2kHb7Yigjo">
+    <div class="modal-head" data-page-node-id="OQiyKe38xKcgVLZQXWvIN1"><h3 id="confirmTitle" data-page-node-id="biWwllgP5OEp54sRDEszPY">确认</h3></div>
+    <div class="modal-body" data-page-node-id="bkdUkP3VbtJNty3RDeqwbV"><p id="confirmMsg" style="margin:0;font-size:14px;color:var(--text-2);line-height:1.7" data-page-node-id="7HEJj81eEZ6GYW0XxBYaZ7"></p></div>
+    <div class="modal-foot" data-page-node-id="E4qRwvH6isK0yVs2FcZH2v">
+      <button class="btn" data-act="confirm-cancel" data-page-node-id="AD6IRbNkEhKFnanJ6Aw6WZ">取消</button>
+      <button class="btn btn-danger" data-act="confirm-ok" id="confirmOk" data-page-node-id="sP6NEb6MNfLneTdfRFXgZ1">确定</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast-wrap" id="toastWrap" data-page-node-id="G81uiFBskCJxmVMTWK7NNW"></div>
+
+<script>
+"use strict";
+/* =========================================================================
+   每周复盘工作台 —— 纯前端单文件应用
+   架构分层：数据层 → 计算层 → 渲染层，调用链单向无环（DAG）
+   所有渲染函数只读取 state/DB 并写 DOM，禁止渲染函数之间互相调用
+   统一刷新入口：refreshAll()
+   ========================================================================= */
+
+/* ---------------- 图标（内联 SVG path，不使用 emoji） ---------------- */
+var IC = {
+  home:'<path d="M3 10.5 12 3l9 7.5V21a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1z"/>',
+  chart:'<path d="M4 20V11M10 20V4M16 20v-7M22 20H2"/>',
+  check:'<path d="M20 6 9 17l-5-5"/>',
+  checkCircle:'<path d="M22 11.1V12a10 10 0 1 1-5.9-9.1"/><path d="m9 11 3 3L22 4"/>',
+  star:'<path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/>',
+  book:'<path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v18H6.5A2.5 2.5 0 0 0 4 22z"/><path d="M4 17.5A2.5 2.5 0 0 1 6.5 15H20"/>',
+  flag:'<path d="M4 22V3M4 4h12l-2 4 2 4H4"/>',
+  plus:'<path d="M12 5v14M5 12h14"/>',
+  search:'<circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/>',
+  gear:'<circle cx="12" cy="12" r="3"/><path d="M19.1 14.2a1.7 1.7 0 0 0 .34 1.87l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.7 1.7 0 0 0-1.87-.34 1.7 1.7 0 0 0-1.03 1.56V21a2 2 0 1 1-4 0v-.1A1.7 1.7 0 0 0 8.6 19.3a1.7 1.7 0 0 0-1.87.34l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.7 1.7 0 0 0 .34-1.87 1.7 1.7 0 0 0-1.56-1.03H2a2 2 0 1 1 0-4h.1A1.7 1.7 0 0 0 3.7 8.6a1.7 1.7 0 0 0-.34-1.87l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.7 1.7 0 0 0 1.87.34H8.6a1.7 1.7 0 0 0 1.03-1.56V2a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1.03 1.56 1.7 1.7 0 0 0 1.87-.34l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.7 1.7 0 0 0-.34 1.87v.06a1.7 1.7 0 0 0 1.56 1.03H22a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.56 1.03z"/>',
+  download:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5 5 5-5"/><path d="M12 15V3"/>',
+  upload:'<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M17 8l-5-5-5 5"/><path d="M12 3v12"/>',
+  trash:'<path d="M3 6h18"/><path d="M8 6V4a1 1 0 0 1 1-1h6a1 1 0 0 1 1 1v2"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/>',
+  edit:'<path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/>',
+  close:'<path d="M18 6 6 18M6 6l12 12"/>',
+  left:'<path d="m15 18-6-6 6-6"/>',
+  right:'<path d="m9 18 6-6-6-6"/>',
+  menu:'<path d="M3 6h18M3 12h18M3 18h18"/>',
+  calendar:'<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>',
+  alert:'<path d="M10.3 3.6 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.6a2 2 0 0 0-3.4 0z"/><path d="M12 9v4M12 17h.01"/>',
+  clock:'<circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/>',
+  target:'<circle cx="12" cy="12" r="9"/><circle cx="12" cy="12" r="5"/><circle cx="12" cy="12" r="1.2"/>',
+  compare:'<path d="M12 3v18"/><path d="m8 7-4 4 4 4"/><path d="m16 7 4 4-4 4"/>',
+  sparkle:'<path d="M12 3v4M12 17v4M3 12h4M17 12h4M6.3 6.3l2.8 2.8M14.9 14.9l2.8 2.8M17.7 6.3l-2.8 2.8M9.1 14.9l-2.8 2.8"/>',
+  archive:'<rect x="2" y="4" width="20" height="5" rx="1"/><path d="M4 9v10a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V9"/><path d="M10 13h4"/>',
+  copy:'<rect x="9" y="9" width="12" height="12" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>',
+  arrowRight:'<path d="M5 12h14M13 6l6 6-6 6"/>',
+  filter:'<path d="M22 3H2l8 9.5V19l4 2v-8.5z"/>',
+  layers:'<path d="m12 2 9 5-9 5-9-5z"/><path d="m3 12 9 5 9-5"/><path d="m3 17 9 5 9-5"/>',
+  inbox:'<path d="M22 12h-6l-2 3h-4l-2-3H2"/><path d="M5.5 5h13l3.5 7v6a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2v-6z"/>',
+  smile:'<circle cx="12" cy="12" r="9"/><path d="M8 14s1.5 2 4 2 4-2 4-2"/><path d="M9 9h.01M15 9h.01"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/>',
+  save:'<path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"/><path d="M17 21v-8H7v8M7 3v5h8"/>',
+  ring:'<circle cx="12" cy="12" r="8.2"/><path d="M12 3.8a8.2 8.2 0 0 1 8.2 8.2" stroke-linecap="round"/><path d="M8.4 12.4 11 15l4.6-6"/>'
+};
+function svg(name, size, color, sw){
+  return '<svg viewBox="0 0 24 24" fill="none" stroke="'+(color||'currentColor')+'" stroke-width="'+(sw||1.8)+
+    '" stroke-linecap="round" stroke-linejoin="round" style="width:'+(size||16)+'px;height:'+(size||16)+'px">'+(IC[name]||'')+'</svg>';
+}
+
+/* ---------------- 常量与配置 ---------------- */
+var STORE_KEY = 'wb_weekly_review_v1';
+var CATEGORIES = ['工作','学习','健康','生活','关系','财务'];
+var METRIC_TYPES = ['数量','时长','比率','金额'];
+/* 工作 / 生活 双栏：所有记录都可归属到其中一个域 */
+var DOMAINS = ['工作','生活'];
+function domOf(it){
+  var d = it && it.domain;
+  return (d === '生活') ? '生活' : '工作';
+}
+var NAV = [
+  {id:'home',      name:'首页',     icon:'home'},
+  {id:'data',      name:'本周数据', icon:'chart'},
+  {id:'tasks',     name:'完成清单', icon:'check'},
+  {id:'hl',        name:'亮点问题', icon:'star'},
+  {id:'lessons',   name:'经验沉淀', icon:'book'},
+  {id:'plans',     name:'下周计划', icon:'flag'},
+  {id:'quarter',   name:'季度回顾', icon:'layers'}
+];
+
+/* 表单 schema：驱动通用弹窗，保证六类记录都有完整字段与校验 */
+var SCHEMAS = {
+  tasks:{
+    title:'完成事项', kind:'tasks', icon:'check',
+    fields:[
+      {key:'title',    label:'事项名称', type:'text', required:true, ph:'例如：完成 Q3 季度复盘报告'},
+      {key:'domain',   label:'归属',     type:'select', options:DOMAINS, def:'工作'},
+      {key:'category', label:'分类',     type:'select', required:true, options:CATEGORIES},
+      {key:'status',   label:'状态',     type:'select', options:['待开始','进行中','已完成'], def:'进行中'},
+      {key:'progress', label:'进度',     type:'range', min:0, max:100, step:5, def:0, unit:'%'},
+      {key:'tags',     label:'标签',     type:'tags', ph:'输入标签后回车'},
+      {key:'note',     label:'备注',     type:'textarea', ph:'补充背景、产出或结果…'}
+    ]
+  },
+  metrics:{
+    title:'关键数据', kind:'metrics', icon:'chart',
+    fields:[
+      {key:'name',   label:'指标名称', type:'text',   required:true, ph:'例如：深度工作时长'},
+      {key:'domain', label:'归属',     type:'select', options:DOMAINS, def:'工作'},
+      {key:'type',   label:'指标类型', type:'select', required:true, options:METRIC_TYPES},
+      {key:'value',  label:'实际数值', type:'number', required:true, ph:'0', step:'any'},
+      {key:'unit',   label:'单位',     type:'text',   ph:'小时 / 次 / % / 元'},
+      {key:'target', label:'目标值',   type:'number', ph:'留空则不计算达成率', step:'any'},
+      {key:'note',   label:'说明',     type:'textarea', ph:'口径、来源或备注…'}
+    ]
+  },
+  highlights:{
+    title:'高光时刻', kind:'highlights', icon:'star',
+    fields:[
+      {key:'title', label:'高光事件', type:'text', required:true, ph:'例如：方案一次过审'},
+      {key:'domain',label:'归属',     type:'select', options:DOMAINS, def:'工作'},
+      {key:'score', label:'价值分',   type:'range', min:1, max:5, step:1, def:4, unit:'分'},
+      {key:'note',  label:'描述',     type:'textarea', required:true, ph:'发生了什么？为什么值得记录？'}
+    ]
+  },
+  issues:{
+    title:'问题与原因', kind:'issues', icon:'alert',
+    fields:[
+      {key:'title',  label:'问题描述', type:'text', required:true, ph:'例如：周中排期被打断'},
+      {key:'domain', label:'归属',     type:'select', options:DOMAINS, def:'工作'},
+      {key:'reason', label:'原因分析', type:'textarea', required:true, ph:'造成该问题的根本原因是什么？'},
+      {key:'impact', label:'影响程度', type:'select', options:['高','中','低'], def:'中'},
+      {key:'status', label:'处理状态', type:'select', options:['待处理','处理中','已解决'], def:'待处理'},
+      {key:'action', label:'改进动作', type:'text', ph:'下一步打算怎么做？'}
+    ]
+  },
+  lessons:{
+    title:'经验沉淀', kind:'lessons', icon:'book',
+    fields:[
+      {key:'title',   label:'经验标题', type:'text', required:true, ph:'例如：会议前先发议程'},
+      {key:'domain',  label:'归属',     type:'select', options:DOMAINS, def:'工作'},
+      {key:'type',    label:'类型',     type:'select', required:true, options:['经验','教训','停止事项']},
+      {key:'reuse',   label:'可复用度', type:'range', min:1, max:5, step:1, def:3, unit:'分'},
+      {key:'tags',    label:'标签',     type:'tags', ph:'输入标签后回车'},
+      {key:'content', label:'具体做法 / 结论', type:'textarea', required:true, ph:'写清场景、动作与结果，方便以后直接复用。'}
+    ]
+  },
+  plans:{
+    title:'下周行动', kind:'plans', icon:'flag',
+    fields:[
+      {key:'title',    label:'行动项',   type:'text', required:true, ph:'例如：完成复盘文档初稿'},
+      {key:'domain',   label:'归属',     type:'select', options:DOMAINS, def:'工作'},
+      {key:'date',     label:'目标日期', type:'date', required:true},
+      {key:'priority', label:'优先级',   type:'select', options:['P0','P1','P2','P3'], def:'P1'},
+      {key:'status',   label:'状态',     type:'select', options:['待开始','进行中','已完成'], def:'待开始'},
+      {key:'progress', label:'进度',     type:'range', min:0, max:100, step:5, def:0, unit:'%'},
+      {key:'note',     label:'备注',     type:'textarea', ph:'验收标准或依赖项…'}
+    ]
+  },
+  review:{
+    title:'本周目标', kind:'review', icon:'target',
+    fields:[
+      {key:'domain',     label:'归属',       type:'select', required:true, options:DOMAINS, def:'工作'},
+      {key:'goal',       label:'本周目标',   type:'textarea', required:true, ph:'一句话写清本周最重要的目标'},
+      {key:'progress',   label:'目标完成率', type:'range', min:0, max:100, step:5, def:0, unit:'%'},
+      {key:'energy',     label:'周能量评分', type:'range', min:1, max:10, step:1, def:7, unit:'分'},
+      {key:'mood',       label:'本周状态',   type:'select', options:['很好','平稳','吃力','低落'], def:'平稳'},
+      {key:'summary',    label:'一句话总结', type:'text', ph:'例如：主线推进顺利，协作待加强'},
+      {key:'energyNote', label:'能量备注',   type:'textarea', ph:'这周精力主要花在哪？什么时候状态最好/最差？'}
+    ]
+  }
+};
+
+/* ---------------- 数据层 ---------------- */
+var DB = null;      // 全部业务数据
+var state = {
+  view:'home',
+  week:null,        // 当前选中周次 YYYY-Www
+  filters:{tasks:'',metrics:'',highlights:'',issues:'',lessons:'',plans:''},
+  sorts:{tasks:'new',metrics:'new',highlights:'score',issues:'new',lessons:'new',plans:'priority'},
+  catFilter:{tasks:'',metrics:'',issues:'',plans:''},
+  statusFilter:{tasks:'',issues:'',plans:''},
+  /* 工作 / 生活：all = 双栏展示，工作 / 生活 = 单栏筛选 */
+  domain:'all',
+  /* 季度回顾当前选中的季度 */
+  quarter:null,
+  form:{kind:null, id:null, tags:[]},
+  confirmCb:null
+};
+
+function uid(){
+  return 'r' + Date.now().toString(36) + Math.random().toString(36).slice(2,7);
+}
+function emptyDB(){
+  return {version:1, reviews:[], tasks:[], metrics:[], highlights:[], issues:[], lessons:[], plans:[], log:[], savedAt:null};
+}
+function loadData(){
+  try{
+    var raw = localStorage.getItem(STORE_KEY);
+    if(!raw) return null;
+    var d = JSON.parse(raw);
+    if(!d || typeof d !== 'object') return null;
+    var base = emptyDB();
+    for(var k in base){ if(!Array.isArray(base[k]) && k!=='version' && k!=='savedAt'){ if(d[k]===undefined) d[k]=base[k]; } }
+    ['reviews','tasks','metrics','highlights','issues','lessons','plans','log'].forEach(function(k){
+      if(!Array.isArray(d[k])) d[k] = [];
+    });
+    d.savedAt = d.savedAt || null;
+    /* 兼容升级：旧版数据没有 domain / energy / energyNote 字段，按工作填默认值 */
+    var migrated = false;
+    d.tasks.forEach(function(x){ if(!x.domain){ x.domain = '工作'; migrated = true; } });
+    d.metrics.forEach(function(x){ if(!x.domain){ x.domain = '工作'; migrated = true; } });
+    d.highlights.forEach(function(x){ if(!x.domain){ x.domain = '工作'; migrated = true; } });
+    d.issues.forEach(function(x){ if(!x.domain){ x.domain = '工作'; migrated = true; } });
+    d.lessons.forEach(function(x){ if(!x.domain){ x.domain = '工作'; migrated = true; } });
+    d.plans.forEach(function(x){ if(!x.domain){ x.domain = '工作'; migrated = true; } });
+    d.reviews.forEach(function(x){
+      if(!x.domain){ x.domain = '工作'; migrated = true; }
+      if(typeof x.energy !== 'number'){ x.energy = null; migrated = true; }
+      if(typeof x.energyNote !== 'string'){ x.energyNote = ''; migrated = true; }
+    });
+    /* 完成迁移后立刻回写一次，避免下次再走一遍兼容逻辑 */
+    if(migrated){
+      try{ localStorage.setItem(STORE_KEY, JSON.stringify(d)); }catch(e){}
+    }
+    return d;
+  }catch(e){ return null; }
+}
+function saveData(silent){
+  DB.savedAt = new Date().toISOString();
+  try{
+    localStorage.setItem(STORE_KEY, JSON.stringify(DB));
+  }catch(e){
+    toast('保存失败：浏览器存储空间不足', 'err'); return;
+  }
+  if(!silent) pushLog('保存数据');
+  renderSaveTime();
+}
+function pushLog(text){
+  DB.log.unshift({t:new Date().toISOString(), text:text});
+  if(DB.log.length > 40) DB.log.length = 40;
+}
+function totalRecords(){
+  return DB.tasks.length + DB.metrics.length + DB.highlights.length + DB.issues.length + DB.lessons.length + DB.plans.length;
+}
+
+/* ---------------- 计算层：日期与周次 ---------------- */
+function pad(n){ return n<10 ? '0'+n : ''+n; }
+function fmtDate(d){ return d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate()); }
+function todayStr(){ return fmtDate(new Date()); }
+function isoWeekKey(d){
+  // 使用更简单直接的ISO周数计算方法
+  var date = new Date(Date.UTC(d.getFullYear(), d.getMonth(), d.getDate()));
+  var dayNum = date.getUTCDay() || 7;
+  date.setUTCDate(date.getUTCDate() + 4 - dayNum);
+  
+  // 计算年份和周数
+  var year = date.getUTCFullYear();
+  var start = new Date(Date.UTC(year, 0, 4));
+  var weekNo = Math.ceil((((date - start) / 86400000) + 1) / 7);
+  
+  // 处理跨年边界
+  if (weekNo === 53) {
+    // 检查该年12月28日是否在第53周
+    var dec28 = new Date(Date.UTC(year, 11, 28));
+    var dec28Week = Math.ceil((((dec28 - start) / 86400000) + 1) / 7);
+    
+    if (dec28Week !== 53) {
+      // 如果12月28日不在第53周，说明该年只有52周，应归为下一年第1周
+      year++;
+      weekNo = 1;
+    }
+  } else if (weekNo === 0) {
+    // 如果计算结果为0，说明属于上一年最后一周
+    year--;
+    weekNo = 52;
+  }
+  
+  return year + '-W' + pad(weekNo);
+}
+function weekRange(key){
+  var p = key.split('-W');
+  var y = parseInt(p[0],10), w = parseInt(p[1],10);
+  var s = new Date(Date.UTC(y, 0, 4));
+  var dow = s.getUTCDay() || 7;
+  s.setUTCDate(s.getUTCDate() - dow + 1 + (w-1)*7);
+  var e = new Date(s); e.setUTCDate(e.getUTCDate()+6);
+  return {
+    start: new Date(s.getUTCFullYear(), s.getUTCMonth(), s.getUTCDate()),
+    end:   new Date(e.getUTCFullYear(), e.getUTCMonth(), e.getUTCDate())
+  };
+}
+function shiftWeek(key, n){
+  var r = weekRange(key);
+  var d = new Date(r.start); d.setDate(d.getDate() + n*7);
+  return isoWeekKey(d);
+}
+function weekLabel(key){
+  var r = weekRange(key);
+  return (r.start.getMonth()+1)+'月'+r.start.getDate()+'日 - '+(r.end.getMonth()+1)+'月'+r.end.getDate()+'日';
+}
+function weeksInYear(year){
+  var d = new Date(Date.UTC(year,11,28));
+  var dayNum = d.getUTCDay() || 7;
+  d.setUTCDate(d.getUTCDate() + 4 - dayNum);
+  var yearStart = new Date(Date.UTC(d.getUTCFullYear(),0,1));
+  return Math.ceil((((d - yearStart)/86400000) + 1)/7);
+}
+function allWeekKeys(){
+  var set = {};
+  ['reviews','tasks','metrics','highlights','issues','lessons','plans'].forEach(function(k){
+    DB[k].forEach(function(it){ if(it.week) set[it.week] = true; });
+  });
+  var cur = isoWeekKey(new Date());
+  for(var i=-8;i<=8;i++){ set[shiftWeek(cur,i)] = true; }
+  return Object.keys(set).sort().reverse();
+}
+function getReview(key){
+  for(var i=0;i<DB.reviews.length;i++){ if(DB.reviews[i].week===key) return DB.reviews[i]; }
+  return null;
+}
+function ensureReview(key){
+  var r = getReview(key);
+  if(!r){
+    r = {id:uid(), week:key, domain:'工作', goal:'', progress:0, mood:'平稳', summary:'',
+         energy:null, energyNote:'', archived:false, createdAt:new Date().toISOString(), updatedAt:new Date().toISOString()};
+    DB.reviews.push(r);
+  }else if(!r.domain){
+    r.domain = '工作';
+  }
+  return r;
+}
+function listOf(kind){ return DB[kind] || []; }
+function byWeek(kind, key){
+  return listOf(kind).filter(function(it){ return it.week === key; });
+}
+
+/* 计算层：统计 */
+function calcWeekStats(key){
+  var tasks = byWeek('tasks', key);
+  var plans = byWeek('plans', key);
+  var done = tasks.filter(function(t){ return t.status === '已完成'; }).length;
+  var review = getReview(key);
+  return {
+    done: done,
+    total: tasks.length,
+    rate: tasks.length ? Math.round(done/tasks.length*100) : 0,
+    goalRate: review ? (review.progress||0) : 0,
+    highlights: byWeek('highlights', key).length,
+    openIssues: byWeek('issues', key).filter(function(i){ return i.status !== '已解决'; }).length,
+    lessons: byWeek('lessons', key).length,
+    plans: plans.length,
+    plansDone: plans.filter(function(p){ return p.status === '已完成'; }).length,
+    metrics: byWeek('metrics', key).length,
+    weight: tasks.length + byWeek('highlights',key).length + byWeek('issues',key).length + byWeek('lessons',key).length + byWeek('metrics',key).length
+  };
+}
+function last8Weeks(endKey){
+  var arr = [];
+  for(var i=7;i>=0;i--) arr.push(shiftWeek(endKey, -i));
+  return arr;
+}
+function overduePlans(){
+  var t = todayStr();
+  return DB.plans.filter(function(p){
+    return p.status !== '已完成' && p.date && p.date < t;
+  });
+}
+function openIssuesOf(key){
+  return byWeek('issues', key).filter(function(i){ return i.status !== '已解决'; });
+}
+function undoneTasksOf(key){
+  return byWeek('tasks', key).filter(function(t){ return t.status !== '已完成'; });
+}
+
+/* 计算层：搜索 / 筛选 / 排序 */
+function matchQuery(item, q, keys){
+  if(!q) return true;
+  q = q.toLowerCase();
+  for(var i=0;i<keys.length;i++){
+    var v = item[keys[i]];
+    if(Array.isArray(v)) v = v.join(' ');
+    if(v && String(v).toLowerCase().indexOf(q) > -1) return true;
+  }
+  return false;
+}
+function queryOf(kind){
+  var el = document.getElementById('q-'+kind);
+  return el ? el.value.trim() : '';
+}
+function filterList(kind, keys){
+  var q = state.filters[kind] || '';
+  return byWeek(kind, state.week).filter(function(it){
+    if(!matchQuery(it, q, keys)) return false;
+    var cf = state.catFilter[kind];
+    if(cf){
+      if(kind==='metrics' && it.type !== cf) return false;
+      if(kind==='tasks'   && it.category !== cf) return false;
+      if(kind==='lessons' && it.type !== cf) return false;
+      if(kind==='plans'   && it.priority !== cf) return false;
+    }
+    var sf = state.statusFilter[kind];
+    if(sf && it.status !== sf) return false;
+    /* 工作 / 生活筛选：all 时不过滤，由渲染层按域分组展示双栏 */
+    if(state.domain !== 'all' && domOf(it) !== state.domain) return false;
+    return true;
+  });
+}
+function sortList(arr, kind){
+  var mode = state.sorts[kind] || 'new';
+  var a = arr.slice();
+  var t = function(x){ return new Date(x.createdAt||0).getTime(); };
+  a.sort(function(x,y){
+    switch(mode){
+      case 'old': return t(x)-t(y);
+      case 'value-desc': return (y.value||0)-(x.value||0);
+      case 'value-asc': return (x.value||0)-(y.value||0);
+      case 'rate-desc': return rateOf(y)-rateOf(x);
+      case 'score': return (y.score||0)-(x.score||0);
+      case 'impact': return impactW(y.impact)-impactW(x.impact);
+      case 'reuse': return (y.reuse||0)-(x.reuse||0);
+      case 'status': return statusW(x.status)-statusW(y.status);
+      case 'cat': return String(x.category||'').localeCompare(String(y.category||''),'zh');
+      case 'type': return String(x.type||'').localeCompare(String(y.type||''),'zh');
+      case 'progress': return (y.progress||0)-(x.progress||0);
+      case 'priority': return prW(x.priority)-prW(y.priority);
+      case 'date': return String(x.date||'9999').localeCompare(String(y.date||'9999'));
+      default: return t(y)-t(x);
+    }
+  });
+  return a;
+}
+function statusW(s){ return s==='待开始'?0:(s==='进行中'?1:2); }
+function prW(p){ return p==='P0'?0:(p==='P1'?1:(p==='P2'?2:3)); }
+function impactW(i){ return i==='高'?0:(i==='中'?1:2); }
+function rateOf(m){
+  if(m.target === undefined || m.target === null || m.target === '' || Number(m.target)===0) return -1;
+  return (Number(m.value)||0) / Number(m.target) * 100;
+}
+
+/* ---------------- 计算层：SVG 图表（手写，不依赖任何库） ---------------- */
+function donutSVG(pct, color, center, sub){
+  var r = 52, c = 2*Math.PI*r, off = c * (1 - Math.max(0,Math.min(100,pct))/100);
+  return '<svg viewBox="0 0 140 140" style="width:150px;height:150px">'+
+    '<circle cx="70" cy="70" r="'+r+'" fill="none" stroke="#EFEADE" stroke-width="13"/>'+
+    '<circle cx="70" cy="70" r="'+r+'" fill="none" stroke="'+color+'" stroke-width="13" stroke-linecap="round"'+
+      ' stroke-dasharray="'+c.toFixed(1)+'" stroke-dashoffset="'+off.toFixed(1)+'" transform="rotate(-90 70 70)"/>'+
+    '<text x="70" y="66" text-anchor="middle" font-size="27" font-weight="700" fill="#1E3A5F" font-family="-apple-system,Segoe UI,sans-serif">'+center+'</text>'+
+    '<text x="70" y="88" text-anchor="middle" font-size="12" fill="#8493A2" font-family="-apple-system,Segoe UI,sans-serif">'+sub+'</text>'+
+  '</svg>';
+}
+function barsSVG(items, opts){
+  opts = opts || {};
+  if(!items.length) return emptyChart('暂无数据，新增指标后自动生成');
+  var W = Math.max(320, items.length*68), H = 190, padL = 34, padB = 34, padT = 14;
+  var max = 0;
+  items.forEach(function(it){ max = Math.max(max, Number(it.value)||0); });
+  if(opts.max !== undefined) max = Math.max(max, opts.max);
+  if(max <= 0) max = 1;
+  var iw = (W - padL - 10) / items.length;
+  var bw = Math.min(34, iw*0.55);
+  var s = '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;min-width:'+W+'px;height:'+H+'px" preserveAspectRatio="xMidYMid meet">';
+  [0,0.25,0.5,0.75,1].forEach(function(g){
+    var y = padT + (H-padT-padB)*(1-g);
+    s += '<line x1="'+padL+'" y1="'+y.toFixed(1)+'" x2="'+(W-6)+'" y2="'+y.toFixed(1)+'" stroke="#EFEADE" stroke-width="1"/>';
+    s += '<text x="'+(padL-6)+'" y="'+(y+4).toFixed(1)+'" text-anchor="end" font-size="10" fill="#8493A2">'+Math.round(max*g)+'</text>';
+  });
+  items.forEach(function(it,i){
+    var v = Number(it.value)||0;
+    var h = (H-padT-padB) * (v/max);
+    var x = padL + iw*i + (iw-bw)/2;
+    var y = H - padB - h;
+    s += '<rect x="'+x.toFixed(1)+'" y="'+y.toFixed(1)+'" width="'+bw.toFixed(1)+'" height="'+Math.max(h,2).toFixed(1)+'" rx="5" fill="'+(it.color||'#3E9B72')+'"/>';
+    var lv = Number(it.value)||0;
+    s += '<text x="'+(x+bw/2).toFixed(1)+'" y="'+(y-5).toFixed(1)+'" text-anchor="middle" font-size="10.5" font-weight="700" fill="#1E3A5F">'+(Math.round(lv*10)/10)+'</text>';
+    s += '<text x="'+(x+bw/2).toFixed(1)+'" y="'+(H-12)+'" text-anchor="middle" font-size="10" fill="#8493A2">'+esc(it.label)+'</text>';
+  });
+  return s + '</svg>';
+}
+function lineSVG(points){
+  var clean = points.filter(function(p){ return p !== null; });
+  if(clean.length < 2) return emptyChart('至少需要两周数据才能生成趋势');
+  var W = 460, H = 190, padL = 34, padB = 30, padT = 16, padR = 10;
+  var max = 1;
+  points.forEach(function(p){ if(p) max = Math.max(max, p.v); });
+  max = Math.ceil(max*1.25) || 1;
+  var n = points.length;
+  var stepX = (W - padL - padR) / Math.max(1,(n-1));
+  var pos = function(i){
+    var p = points[i];
+    return {x: padL + stepX*i, y: padT + (H-padT-padB)*(1 - (p?p.v:0)/max), v: p?p.v:0};
+  };
+  var s = '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;min-width:340px;height:'+H+'px" preserveAspectRatio="xMidYMid meet">';
+  [0,0.5,1].forEach(function(g){
+    var y = padT + (H-padT-padB)*(1-g);
+    s += '<line x1="'+padL+'" y1="'+y.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+y.toFixed(1)+'" stroke="#EFEADE"/>';
+    s += '<text x="'+(padL-6)+'" y="'+(y+4).toFixed(1)+'" text-anchor="end" font-size="10" fill="#8493A2">'+Math.round(max*g)+'</text>';
+  });
+  var d = '', area = '';
+  for(var i=0;i<n;i++){
+    var p = pos(i);
+    d += (i===0?'M':'L') + p.x.toFixed(1) + ' ' + p.y.toFixed(1) + ' ';
+  }
+  area = d + 'L' + pos(n-1).x.toFixed(1) + ' ' + (H-padB) + ' L' + pos(0).x.toFixed(1) + ' ' + (H-padB) + ' Z';
+  s += '<path d="'+area+'" fill="#3E9B72" opacity="0.10"/>';
+  s += '<path d="'+d+'" fill="none" stroke="#3E9B72" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>';
+  for(var j=0;j<n;j++){
+    var q = pos(j), cur = points[j] && points[j].cur;
+    s += '<circle cx="'+q.x.toFixed(1)+'" cy="'+q.y.toFixed(1)+'" r="'+(cur?4.5:3.2)+'" fill="'+(cur?'#1E3A5F':'#FFFFFF')+'" stroke="#3E9B72" stroke-width="2"/>';
+    s += '<title>'+esc(points[j].label)+'：'+q.v+'</title>';
+    if(n<=10 || j%2===0){
+      s += '<text x="'+q.x.toFixed(1)+'" y="'+(H-10)+'" text-anchor="middle" font-size="9.5" fill="#8493A2">'+esc(points[j].label)+'</text>';
+    }
+  }
+  return s + '</svg>';
+}
+function hbarSVG(items){
+  if(!items.length) return emptyChart('暂无数据');
+  var W = 420, rowH = 34, H = items.length*rowH + 8, padL = 62;
+  var max = 1;
+  items.forEach(function(it){ max = Math.max(max, it.v); });
+  var s = '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;min-width:300px;height:'+H+'px" preserveAspectRatio="xMidYMid meet">';
+  items.forEach(function(it,i){
+    var y = i*rowH + 6;
+    var bw = (W-padL-52) * (it.v/max);
+    s += '<text x="'+(padL-8)+'" y="'+(y+15)+'" text-anchor="end" font-size="11.5" fill="#4A5A6A">'+esc(it.k)+'</text>';
+    s += '<rect x="'+padL+'" y="'+(y+4)+'" width="'+(W-padL-52)+'" height="14" rx="7" fill="#F2EEE4"/>';
+    s += '<rect x="'+padL+'" y="'+(y+4)+'" width="'+Math.max(bw,3).toFixed(1)+'" height="14" rx="7" fill="'+it.c+'"/>';
+    s += '<text x="'+(W-6)+'" y="'+(y+15)+'" text-anchor="end" font-size="11.5" font-weight="700" fill="#1E3A5F">'+it.v+'</text>';
+  });
+  return s + '</svg>';
+}
+function emptyChart(msg){
+  return '<div class="empty" style="padding:28px 12px"><span class="hint">'+esc(msg)+'</span></div>';
+}
+function esc(s){
+  if(s === null || s === undefined) return '';
+  return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+}
+
+/* ---------------- 渲染层（互不调用，统一由 refreshAll 调度） ---------------- */
+function renderNav(){
+  var cur = state.week;
+  var counts = {home:'', data:byWeek('metrics',cur).length, tasks:byWeek('tasks',cur).length,
+    hl:byWeek('highlights',cur).length + byWeek('issues',cur).length,
+    lessons:byWeek('lessons',cur).length, plans:byWeek('plans',cur).length};
+  var h = '<div class="nav-label">工作区</div>';
+  NAV.forEach(function(n){
+    h += '<button class="nav-item'+(state.view===n.id?' active':'')+'" data-act="go" data-view="'+n.id+'">'+
+      svg(n.icon,17)+'<span>'+n.name+'</span>'+
+      (counts[n.id] ? '<span class="badge">'+counts[n.id]+'</span>' : '')+
+    '</button>';
+  });
+  var nav = document.getElementById('nav');
+  if(nav) nav.innerHTML = h;
+
+  var b = '';
+  NAV.forEach(function(n){
+    b += '<button class="'+(state.view===n.id?'on':'')+'" data-act="go" data-view="'+n.id+'">'+svg(n.icon,19)+'<span>'+n.name.replace('亮点问题','亮点').replace('经验沉淀','经验')+'</span></button>';
+  });
+  var bb = document.getElementById('bottombar');
+  if(bb) bb.innerHTML = b;
+}
+function renderWeekBar(){
+  var sel = document.getElementById('weekSelect');
+  if(!sel) return;
+  var keys = allWeekKeys(), cur = isoWeekKey(new Date());
+  if(keys.indexOf(state.week) < 0) keys.unshift(state.week);
+  var h = '';
+  keys.forEach(function(k){
+    var label = k + (k===cur ? '（本周）' : '');
+    h += '<option value="'+k+'"'+(k===state.week?' selected':'')+'>'+label+'</option>';
+  });
+  sel.innerHTML = h;
+  var range = document.getElementById('weekRange');
+  if(range) range.textContent = weekLabel(state.week);
+  var r = getReview(state.week);
+  var ab = document.getElementById('archText');
+  if(ab) ab.textContent = (r && r.archived) ? '取消归档' : '归档本周';
+}
+function renderSaveTime(){
+  var el = document.getElementById('saveTime');
+  if(!el) return;
+  if(!DB.savedAt){ el.textContent = '尚未保存'; return; }
+  var d = new Date(DB.savedAt);
+  el.textContent = '已保存 ' + pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+  var s2 = document.getElementById('setSaveTime');
+  if(s2) s2.textContent = d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate())+' '+pad(d.getHours())+':'+pad(d.getMinutes())+':'+pad(d.getSeconds());
+  var c = document.getElementById('setCount');
+  if(c) c.textContent = totalRecords() + ' 条';
+}
+function renderGreeting(){
+  var d = new Date(), h = d.getHours();
+  var greet = h<6?'夜深了':(h<11?'早上好':(h<14?'中午好':(h<18?'下午好':'晚上好')));
+  var wd = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'][d.getDay()];
+  var t = document.getElementById('greetTitle');
+  if(t) t.textContent = greet + '，今天是 ' + (d.getMonth()+1)+' 月 '+d.getDate()+' 日 ' + wd;
+  var s = document.getElementById('greetSub');
+  if(s){
+    var st = calcWeekStats(state.week);
+    s.textContent = '正在复盘 ' + state.week + '（' + weekLabel(state.week) + '）· 本周已记录 ' +
+      (st.total + st.highlights + st.metrics + st.lessons + byWeek('issues',state.week).length) + ' 条内容';
+  }
+}
+function renderToday(){
+  var box = document.getElementById('todayBox');
+  if(!box) return;
+  var d = new Date();
+  var wd = ['星期日','星期一','星期二','星期三','星期四','星期五','星期六'][d.getDay()];
+  var items = [];
+  overduePlans().forEach(function(p){
+    var days = Math.round((new Date(todayStr()) - new Date(p.date))/86400000);
+    items.push({od:true, t:p.title, s:'逾期 '+days+' 天 · 计划于 '+p.date, act:'完成', kind:'plans', id:p.id, quick:'done'});
+    items.push({od:true, t:p.title, s:'顺延到本周处理', act:'顺延', kind:'plans', id:p.id, quick:'defer'});
+  });
+  undoneTasksOf(state.week).forEach(function(t){
+    items.push({od:false, t:t.title, s:'本周未完成 · '+t.category+' · '+t.status, act:'完成', kind:'tasks', id:t.id, quick:'done'});
+  });
+  openIssuesOf(state.week).forEach(function(i){
+    items.push({od:false, t:i.title, s:'问题待处理 · 影响'+i.impact, act:'已解决', kind:'issues', id:i.id, quick:'done'});
+  });
+  var h = '<div class="today-head"><h3>'+svg('alert',16)+'今天要处理</h3>'+
+    '<span class="pill '+(items.length?'pill-red':'pill-green')+'">'+items.length+' 项</span>'+
+    '<span class="today-date">'+fmtDate(d)+' '+wd+'</span></div><div class="today-list">';
+  if(!items.length){
+    h += '<div class="today-empty">'+svg('checkCircle',16)+'<span>本周事项已全部处理完毕，保持节奏。</span></div>';
+  }else{
+    items.slice(0,10).forEach(function(it){
+      h += '<div class="today-item'+(it.od?' od':'')+'">'+
+        '<span class="pill '+(it.od?'pill-red':'pill-amber')+'">'+esc(it.quick==='defer'?'顺延':(it.od?'逾期':'待办'))+'</span>'+
+        '<span class="ti-main"><span class="ti-t">'+esc(it.t)+'</span><span class="ti-s">'+esc(it.s)+'</span></span>'+
+        '<button class="btn btn-sm '+(it.quick==='defer'?'':'btn-green')+'" data-act="quick" data-kind="'+it.kind+'" data-id="'+it.id+'" data-q="'+it.quick+'">'+it.act+'</button>'+
+      '</div>';
+    });
+    if(items.length > 10) h += '<div class="today-empty" style="color:var(--muted)">仅显示前 10 项，其余请到对应模块查看。</div>';
+  }
+  h += '</div>';
+  box.innerHTML = h;
+}
+function deltaHTML(cur, prev, unit){
+  var diff = cur - prev;
+  var cls = diff>0?'up':(diff<0?'down':'flat');
+  var arrow = diff>0?'▲':(diff<0?'▼':'—');
+  var txt = diff===0 ? '与上周持平' : (diff>0?'较上周 +':'较上周 ')+diff+(unit||'');
+  return '<span class="delta '+cls+'">'+arrow+' '+esc(txt)+'</span>';
+}
+function renderHomeStats(){
+  var el = document.getElementById('homeStats');
+  if(!el) return;
+  var cur = calcWeekStats(state.week), prev = calcWeekStats(shiftWeek(state.week,-1));
+  var r = getReview(state.week);
+  var e = (r && typeof r.energy === 'number') ? r.energy : null;
+  var lv = energyLevel(e);
+  var curEnergy = {
+    v: e === null ? '—' : e,
+    lv: lv,
+    foot: e === null ? '本周尚未评分' : '本周能量 '+lv.label
+  };
+  var cards = [
+    {n:'本周完成数', v:cur.done, unit:'/ '+cur.total+' 项', ico:'check', c:'#3E9B72', bg:'#E9F5EF', d:deltaHTML(cur.done, prev.done, ' 项')},
+    {n:'目标完成率', v:cur.goalRate, unit:'%', ico:'target', c:'#1E3A5F', bg:'#E8EEF5', d:deltaHTML(cur.goalRate, prev.goalRate, '%')},
+    {n:'高光事件',   v:cur.highlights, unit:'件', ico:'star', c:'#D9963C', bg:'#FCF2E2', d:deltaHTML(cur.highlights, prev.highlights, ' 件')},
+    {n:'未完成事项', v:cur.total-cur.done, unit:'项', ico:'alert', c:'#C85A4F', bg:'#FBEBE9', d:'待处理问题 '+cur.openIssues+' 个'},
+    {n:'周能量',     v:curEnergy.v, unit:'分', ico:'sun', c:curEnergy.lv.color, bg:'#FCF2E2', d:curEnergy.foot}
+  ];
+  var h = '';
+  cards.forEach(function(c){
+    h += '<div class="stat"><div class="stat-top">'+
+      '<span class="stat-ico" style="background:'+c.bg+';color:'+c.c+'">'+svg(c.ico,15)+'</span>'+
+      '<span class="stat-name">'+c.n+'</span></div>'+
+      '<div class="stat-val">'+c.v+'<small>'+c.unit+'</small></div>'+
+      '<div class="stat-foot">'+c.d+'</div></div>';
+  });
+  el.innerHTML = h;
+}
+function renderTrend(){
+  var el = document.getElementById('trendChart');
+  if(!el) return;
+  var keys = last8Weeks(state.week);
+  var pts = keys.map(function(k){
+    return {v: byWeek('tasks',k).filter(function(t){return t.status==='已完成';}).length, label:k.replace(/^\d{4}-W/,''), cur:k===state.week};
+  });
+  el.innerHTML = lineSVG(pts) + '<div class="legend-row"><span><i style="background:#3E9B72"></i>每周完成事项数</span><span><i style="background:#1E3A5F"></i>当前选中周</span></div>' +
+    '<div class="heat" style="margin-top:10px">' +
+      keys.map(function(k){
+        var st = calcWeekStats(k);
+        return '<button class="heat-cell'+(k===state.week?' cur':'')+'" data-act="go-week" data-week="'+k+'" title="'+k+'：完成 '+st.done+' 项">'+k.replace(/^\d{4}-W/,'')+'</button>';
+      }).join('') +
+    '</div>';
+}
+function renderYearHeat(){
+  var el = document.getElementById('yearHeat');
+  if(!el) return;
+  var year = parseInt(state.week.split('-W')[0],10);
+  var n = weeksInYear(year);
+  var lbl = document.getElementById('yearLabel');
+  if(lbl) lbl.textContent = year + ' 年共 ' + n + ' 周';
+  var maxW = 1;
+  var data = [];
+  for(var i=1;i<=n;i++){
+    var k = year + '-W' + pad(i);
+    var st = calcWeekStats(k);
+    maxW = Math.max(maxW, st.weight);
+    data.push({k:k, w:st.weight, archived:(getReview(k)&&getReview(k).archived), done:st.done});
+  }
+  var h = '';
+  data.forEach(function(d){
+    var bg = '#EFEADE', color = '#8493A2';
+    if(d.archived){ bg = '#1E3A5F'; color = '#fff'; }
+    else if(d.w>0){
+      var r = d.w/maxW;
+      bg = r>0.66 ? '#3E9B72' : (r>0.33 ? '#83C4A6' : '#CBE3D7');
+      color = r>0.66 ? '#fff' : '#3E9B72';
+    }
+    h += '<button class="heat-cell'+(d.k===state.week?' cur':'')+(d.w>0?' has':'')+'" data-act="go-week" data-week="'+d.k+'" '+
+      'style="background:'+bg+';color:'+color+'" title="'+d.k+'：'+d.w+' 条记录'+(d.archived?'（已归档）':'')+'">'+d.k.replace(/^\d{4}-W/,'')+'</button>';
+  });
+  el.innerHTML = h;
+}
+function miniList(items, emptyMsg){
+  if(!items.length){
+    return '<div class="empty" style="padding:22px 10px">'+svg('inbox',36)+'<p>'+esc(emptyMsg)+'</p></div>';
+  }
+  return '<div class="list">' + items.map(function(it){ return it; }).join('') + '</div>';
+}
+function starSVG(n){
+  var s = '';
+  for(var i=1;i<=5;i++){
+    s += '<svg viewBox="0 0 24 24" style="width:12px;height:12px;display:inline-block;vertical-align:-1px" fill="'+(i<=n?'#D9963C':'#EFEADE')+'" stroke="none"><path d="m12 3 2.7 5.6 6.1.9-4.4 4.3 1 6.1-5.4-2.9-5.4 2.9 1-6.1L3.2 9.5l6.1-.9z"/></svg>';
+  }
+  return s;
+}
+function renderHomeHighlights(){
+  var el = document.getElementById('homeHighlights');
+  if(!el) return;
+  var list = byWeek('highlights', state.week).slice().sort(function(a,b){ return (b.score||0)-(a.score||0); }).slice(0,4);
+  if(!list.length){ el.innerHTML = miniList([], '本周还没有记录高光'); return; }
+  el.innerHTML = '<div class="list">' + list.map(function(h){
+    return '<div class="row"><span class="stat-ico" style="background:#FCF2E2;color:#D9963C;flex:0 0 28px">'+svg('star',15)+'</span>'+
+      '<div class="row-main"><div class="row-title">'+esc(h.title)+'</div>'+
+      '<div class="row-meta">'+starSVG(h.score||0)+'<span>'+(h.score||0)+' 分</span></div>'+
+      (h.note?'<div class="row-note">'+esc(h.note)+'</div>':'')+'</div></div>';
+  }).join('') + '</div>';
+}
+function renderHomeUndone(){
+  var el = document.getElementById('homeUndone');
+  if(!el) return;
+  var list = undoneTasksOf(state.week).slice(0,5);
+  if(!list.length){ el.innerHTML = miniList([], '本周事项已全部完成'); return; }
+  el.innerHTML = '<div class="list">' + list.map(function(t){
+    return '<div class="row"><button class="checkbox" data-act="toggle-task" data-id="'+t.id+'" aria-label="标记完成"></button>'+
+      '<div class="row-main"><div class="row-title">'+esc(t.title)+'</div>'+
+      '<div class="row-meta"><span class="pill pill-amber">'+esc(t.status)+'</span><span class="tag">'+esc(t.category)+'</span>'+
+      '<span>进度 '+(t.progress||0)+'%</span></div></div></div>';
+  }).join('') + '</div>';
+}
+function renderHomePlans(){
+  var el = document.getElementById('homePlans');
+  if(!el) return;
+  var nextWeek = shiftWeek(state.week, 1);
+  var list = byWeek('plans', nextWeek).slice().sort(function(a,b){ return prW(a.priority)-prW(b.priority); }).slice(0,5);
+  if(!list.length){
+    var cur = byWeek('plans', state.week).slice(0,4);
+    if(!cur.length){ el.innerHTML = miniList([], '还没有下周计划'); return; }
+    list = cur;
+  }
+  el.innerHTML = '<div class="list">' + list.map(function(p){
+    var pc = p.priority==='P0'?'pill-red':(p.priority==='P1'?'pill-amber':'pill-navy');
+    return '<div class="row"><div class="row-main"><div class="row-title">'+esc(p.title)+' <span class="pill '+pc+'">'+esc(p.priority)+'</span></div>'+
+      '<div class="row-meta">'+svg('calendar',12)+'<span>'+esc(p.date||'未设置')+'</span><span>'+esc(p.week||'')+'</span></div></div></div>';
+  }).join('') + '</div>';
+}
+function renderHomeRecent(){
+  var el = document.getElementById('homeRecent');
+  if(!el) return;
+  var log = DB.log.slice(0,6);
+  if(!log.length){ el.innerHTML = '<div class="empty" style="padding:20px 8px"><span class="hint">暂无操作记录</span></div>'; return; }
+  el.innerHTML = '<div class="kv">' + log.map(function(l){
+    var d = new Date(l.t);
+    return '<div class="kv-row"><span class="kv-k">'+esc(l.text)+'</span>'+
+      '<span class="kv-v" style="font-size:11.5px;font-weight:600;color:var(--muted)">'+
+      (d.getMonth()+1)+'/'+d.getDate()+' '+pad(d.getHours())+':'+pad(d.getMinutes())+'</span></div>';
+  }).join('') + '</div>';
+}
+
+/* --- 本周数据页 --- */
+function renderReviewBlock(){
+  var el = document.getElementById('reviewBlock');
+  if(!el) return;
+  var r = getReview(state.week);
+  var goal = r ? r.goal : '';
+  var h = '<div class="kv">';
+  h += '<div class="kv-row"><span class="kv-k">周次</span><span class="kv-v">'+state.week+'</span></div>';
+  h += '<div class="kv-row"><span class="kv-k">周期</span><span class="kv-v" style="font-size:13px">'+weekLabel(state.week)+'</span></div>';
+  h += '<div class="kv-row"><span class="kv-k">本周目标</span><span class="kv-v" style="font-size:13px;font-weight:600;white-space:normal;text-align:right;max-width:65%">'+
+    (goal ? esc(goal) : '<span style="color:var(--muted);font-weight:500">尚未填写</span>')+'</span></div>';
+  h += '<div class="kv-row"><span class="kv-k">本周状态</span><span class="kv-v"><span class="pill pill-navy">'+esc(r?r.mood:'平稳')+'</span></span></div>';
+  h += '<div class="kv-row"><span class="kv-k">一句话总结</span><span class="kv-v" style="font-size:13px;font-weight:600">'+esc((r&&r.summary)||'—')+'</span></div>';
+  h += '</div>';
+  el.innerHTML = h;
+
+  var d = document.getElementById('goalDonut');
+  if(d) d.innerHTML = donutSVG(r?r.progress:0, '#1E3A5F', (r?r.progress:0)+'%', '目标完成率');
+}
+function metricRows(){
+  return sortList(filterList('metrics', ['name','note','unit','type']), 'metrics');
+}
+function renderMetrics(){
+  var el = document.getElementById('metricsList');
+  if(!el) return;
+  var list = metricRows();
+  var sum = document.getElementById('taskSummary');
+  if(!list.length){
+    el.innerHTML = '<div class="empty">'+svg('chart',40)+'<p>本周还没有关键数据</p><span>点击「新增指标」记录第一个数字</span>'+
+      '<button class="btn btn-primary btn-sm" style="margin-top:14px" data-act="add" data-kind="metrics">新增指标</button></div>';
+  }else{
+    el.innerHTML = '<div class="list">' + list.map(function(m){
+      var rate = rateOf(m);
+      var rc = rate<0 ? '' : (rate>=100 ? '<span class="pill pill-green">达成 '+Math.round(rate)+'%</span>' :
+        (rate>=60 ? '<span class="pill pill-amber">'+Math.round(rate)+'%</span>' : '<span class="pill pill-red">'+Math.round(rate)+'%</span>'));
+      return '<div class="row"><div class="row-main">'+
+        '<div class="row-title">'+esc(m.name)+' <span class="tag">'+esc(m.type)+'</span>'+rc+'</div>'+
+        '<div class="row-meta"><strong style="font-size:15px;color:var(--navy)">'+esc(m.value)+'</strong>'+
+        '<span>'+esc(m.unit||'')+'</span>'+
+        (m.target!==''&&m.target!==undefined&&m.target!==null ? '<span>目标 '+esc(m.target)+' '+esc(m.unit||'')+'</span>' : '<span>未设目标</span>')+
+        '</div>'+
+        (m.note?'<div class="row-note">'+esc(m.note)+'</div>':'')+
+        '</div><div class="row-actions">'+
+        '<button class="icon-btn" data-act="edit" data-kind="metrics" data-id="'+m.id+'" title="编辑">'+svg('edit',15)+'</button>'+
+        '<button class="icon-btn" data-act="del" data-kind="metrics" data-id="'+m.id+'" title="删除">'+svg('trash',15)+'</button>'+
+        '</div></div>';
+    }).join('') + '</div>';
+  }
+  renderMetricBars();
+  renderMetricCompare();
+}
+function renderMetricBars(){
+  var el = document.getElementById('metricBars');
+  if(!el) return;
+  var list = metricRows();
+  var items = list.map(function(m){
+    var r = rateOf(m);
+    return {label:(m.name||'').slice(0,4), value: Math.max(0, Math.round(r)), color: r>=100?'#3E9B72':(r>=60?'#5BB08A':'#D9963C')};
+  });
+  el.innerHTML = barsSVG(items, {max:100});
+}
+function renderMetricCompare(){
+  var el = document.getElementById('metricCompare');
+  if(!el) return;
+  var prevKey = shiftWeek(state.week,-1);
+  var cur = byWeek('metrics', state.week), prev = byWeek('metrics', prevKey);
+  if(!cur.length && !prev.length){
+    el.innerHTML = '<div class="empty" style="padding:26px 10px">'+svg('compare',36)+'<p>暂无可对比数据</p><span>连续记录两周后自动生成环比</span></div>';
+    return;
+  }
+  var map = {};
+  prev.forEach(function(m){ map[m.name] = m; });
+  var h = '<div class="kv">';
+  cur.forEach(function(m){
+    var p = map[m.name];
+    if(!p){
+      h += '<div class="kv-row"><span class="kv-k">'+esc(m.name)+' <span class="tag g">新增</span></span><span class="kv-v">'+esc(m.value)+esc(m.unit||'')+'</span><span class="kv-d" style="color:var(--muted)">—</span></div>';
+    }else{
+      var diff = Number(m.value||0) - Number(p.value||0);
+      var cls = diff>0?'var(--green)':(diff<0?'var(--red)':'var(--muted)');
+      var sign = diff>0?'+':'';
+      var pv = Number(p.value||0);
+      var pct = pv!==0 ? ' ('+sign+Math.round(diff/pv*100)+'%)' : '';
+      h += '<div class="kv-row"><span class="kv-k">'+esc(m.name)+'</span><span class="kv-v">'+esc(m.value)+esc(m.unit||'')+'</span>'+
+        '<span class="kv-d" style="color:'+cls+'">'+(diff===0?'持平':sign+(Math.round(diff*100)/100)+pct)+'</span></div>';
+    }
+  });
+  h += '</div>';
+  h += '<div class="hint" style="margin-top:10px">对比基准：'+prevKey+'（'+weekLabel(prevKey)+'）</div>';
+  el.innerHTML = h;
+}
+
+/* --- 完成清单页 --- */
+/* --- 工作 / 生活 双栏辅助（纯函数，只依赖 state.domain） --- */
+function domTag(it){
+  var d = domOf(it);
+  return '<span class="dom-tag '+(d==='工作'?'work':'life')+'">'+d+'</span>';
+}
+function dualHead(dom, n){
+  var cls = (dom === '工作') ? 'work' : 'life';
+  return '<div class="dual-head '+cls+'">'+svg(dom==='工作'?'layers':'smile',15)+
+    '<span>'+dom+'</span><span class="cnt">'+n+' 项</span></div>';
+}
+/* all = 双栏并排；工作 / 生活 = 单栏 */
+function dualHTML(items, rowFn){
+  if(state.domain !== 'all'){
+    return '<div class="list">' + items.map(rowFn).join('') + '</div>';
+  }
+  var work = [], life = [];
+  items.forEach(function(it){ (domOf(it) === '生活' ? life : work).push(it); });
+  function col(dom, arr){
+    return '<div class="dual-col">' + dualHead(dom, arr.length) +
+      (arr.length ? '<div class="list">' + arr.map(rowFn).join('') + '</div>'
+                  : '<div class="dual-empty">本周暂无' + dom + '侧记录</div>') +
+    '</div>';
+  }
+  return '<div class="dual">' + col('工作', work) + col('生活', life) + '</div>';
+}
+function taskRow(t){
+  var isDone = t.status === '已完成';
+  var pc = isDone?'pill-green':(t.status==='进行中'?'pill-amber':'pill-navy');
+  return '<div class="row'+(isDone?' done':'')+'">'+
+    '<button class="checkbox'+(isDone?' on':'')+'" data-act="toggle-task" data-id="'+t.id+'" aria-label="切换完成状态">'+(isDone?svg('check',12):'')+'</button>'+
+    '<div class="row-main"><div class="row-title">'+esc(t.title)+'</div>'+
+    '<div class="row-meta"><span class="pill '+pc+'">'+esc(t.status)+'</span><span class="tag">'+esc(t.category)+'</span>'+
+    (t.tags&&t.tags.length? t.tags.map(function(g){return '<span class="tag g">#'+esc(g)+'</span>';}).join('') : '')+
+    '<span>进度 '+(t.progress||0)+'%</span></div>'+
+    '<div class="pbar"><i style="width:'+(t.progress||0)+'%;background:'+(isDone?'#3E9B72':'#5BB08A')+'"></i></div>'+
+    (t.note?'<div class="row-note">'+esc(t.note)+'</div>':'')+
+    '</div><div class="row-actions">'+
+    '<button class="icon-btn" data-act="edit" data-kind="tasks" data-id="'+t.id+'" title="编辑">'+svg('edit',15)+'</button>'+
+    '<button class="icon-btn" data-act="del" data-kind="tasks" data-id="'+t.id+'" title="删除">'+svg('trash',15)+'</button>'+
+    '</div></div>';
+}
+function renderTasks(){
+  var el = document.getElementById('tasksList');
+  if(!el) return;
+  var all = byWeek('tasks', state.week);
+  var list = sortList(filterList('tasks', ['title','note','category','tags']), 'tasks');
+  var done = all.filter(function(t){return t.status==='已完成';}).length;
+  var s = document.getElementById('taskSummary');
+  if(s) s.textContent = '共 ' + all.length + ' 项 · 已完成 ' + done + ' 项（' + (all.length?Math.round(done/all.length*100):0) + '%）';
+  if(!all.length){
+    el.innerHTML = '<div class="empty">'+svg('check',40)+'<p>本周还没有完成事项</p><span>把做过的事记下来，复盘才有依据</span>'+
+      '<button class="btn btn-primary btn-sm" style="margin-top:14px" data-act="add" data-kind="tasks">新增事项</button></div>';
+  }else if(!list.length){
+    el.innerHTML = '<div class="empty">'+svg('search',36)+'<p>没有匹配的结果</p><span>试试更换关键词或清除筛选条件</span></div>';
+  }else{
+    el.innerHTML = dualHTML(list, taskRow);
+  }
+  renderTaskCats();
+  renderTaskTrend();
+}
+function renderTaskCats(){
+  var el = document.getElementById('taskCats');
+  if(!el) return;
+  var all = byWeek('tasks', state.week);
+  var map = {};
+  all.forEach(function(t){ map[t.category||'其他'] = (map[t.category||'其他']||0) + 1; });
+  var colors = ['#1E3A5F','#3E9B72','#D9963C','#2C5282','#5BB08A','#C85A4F'];
+  var i = 0;
+  var items = Object.keys(map).map(function(k){ return {k:k, v:map[k], c:colors[(i++)%colors.length]}; })
+    .sort(function(a,b){ return b.v-a.v; });
+  if(!items.length){ el.innerHTML = emptyChart('暂无分类数据'); return; }
+  el.innerHTML = hbarSVG(items) + '<div class="legend-row">' +
+    items.map(function(it){ return '<span><i style="background:'+it.c+'"></i>'+esc(it.k)+' '+it.v+'</span>'; }).join('') + '</div>';
+}
+function renderTaskTrend(){
+  var el = document.getElementById('taskTrend');
+  if(!el) return;
+  var keys = last8Weeks(state.week);
+  var items = keys.map(function(k){
+    var st = byWeek('tasks',k).filter(function(t){return t.status==='已完成';}).length;
+    return {label:k.replace(/^\d{4}-W/,''), value:st, color:(k===state.week?'#1E3A5F':'#3E9B72')};
+  });
+  el.innerHTML = barsSVG(items) + '<div class="legend-row"><span><i style="background:#1E3A5F"></i>当前选中周</span><span><i style="background:#3E9B72"></i>其它周</span></div>';
+}
+
+/* --- 亮点问题页 --- */
+function renderHL(){
+  var el = document.getElementById('hlList');
+  if(!el) return;
+  var all = byWeek('highlights', state.week);
+  var list = sortList(filterList('highlights', ['title','note']), 'highlights');
+  if(!all.length){
+    el.innerHTML = '<div class="empty">'+svg('star',40)+'<p>本周还没有高光时刻</p><span>哪怕是很小的进展，也值得记一笔</span>'+
+      '<button class="btn btn-primary btn-sm" style="margin-top:14px" data-act="add" data-kind="highlights">新增高光</button></div>';
+  }else if(!list.length){
+    el.innerHTML = '<div class="empty">'+svg('search',36)+'<p>没有匹配的结果</p><span>试试其它关键词</span></div>';
+  }else{
+    el.innerHTML = list.map(function(h){
+      return '<div class="row"><span class="stat-ico" style="background:#FCF2E2;color:#D9963C;flex:0 0 28px">'+svg('star',15)+'</span>'+
+        '<div class="row-main"><div class="row-title">'+esc(h.title)+'</div>'+
+        '<div class="row-meta">'+starSVG(h.score||0)+'<span>价值 '+(h.score||0)+' 分</span></div>'+
+        (h.note?'<div class="row-note">'+esc(h.note)+'</div>':'')+'</div>'+
+        '<div class="row-actions">'+
+        '<button class="icon-btn" data-act="edit" data-kind="highlights" data-id="'+h.id+'" title="编辑">'+svg('edit',15)+'</button>'+
+        '<button class="icon-btn" data-act="del" data-kind="highlights" data-id="'+h.id+'" title="删除">'+svg('trash',15)+'</button>'+
+        '</div></div>';
+    }).join('');
+  }
+  renderIssues();
+}
+function renderIssues(){
+  var el = document.getElementById('issueList');
+  if(!el) return;
+  var all = byWeek('issues', state.week);
+  var list = sortList(filterList('issues', ['title','reason','action']), 'issues');
+  var s = document.getElementById('issueSummary');
+  if(s){
+    var open = all.filter(function(i){return i.status!=='已解决';}).length;
+    s.textContent = '共 ' + all.length + ' 个 · 待处理 ' + open + ' 个';
+  }
+  if(!all.length){
+    el.innerHTML = '<div class="empty">'+svg('alert',40)+'<p>本周还没有记录问题</p><span>把卡住的地方写下来，才能找到根因</span>'+
+      '<button class="btn btn-primary btn-sm" style="margin-top:14px" data-act="add" data-kind="issues">新增问题</button></div>';
+  }else if(!list.length){
+    el.innerHTML = '<div class="empty">'+svg('search',36)+'<p>没有匹配的结果</p><span>试试其它关键词或清除筛选</span></div>';
+  }else{
+    el.innerHTML = list.map(function(i){
+      var pc = i.status==='已解决'?'pill-green':(i.status==='处理中'?'pill-amber':'pill-red');
+      var ic = i.impact==='高'?'pill-red':(i.impact==='中'?'pill-amber':'pill-navy');
+      return '<div class="row'+(i.status==='待处理'?' overdue':'')+'">'+
+        '<span class="stat-ico" style="background:'+(i.impact==='高'?'#FBEBE9':'#FCF2E2')+';color:'+(i.impact==='高'?'#C85A4F':'#D9963C')+';flex:0 0 28px">'+svg('alert',15)+'</span>'+
+        '<div class="row-main"><div class="row-title">'+esc(i.title)+' <span class="pill '+pc+'">'+esc(i.status)+'</span><span class="pill '+ic+'">影响'+esc(i.impact)+'</span></div>'+
+        '<div class="row-note" style="margin-top:8px"><strong>原因：</strong>'+esc(i.reason||'未填写')+'</div>'+
+        (i.action?'<div class="row-meta" style="margin-top:6px">'+svg('arrowRight',12)+'<span>改进动作：'+esc(i.action)+'</span></div>':'')+
+        '</div><div class="row-actions">'+
+        '<button class="icon-btn" data-act="edit" data-kind="issues" data-id="'+i.id+'" title="编辑">'+svg('edit',15)+'</button>'+
+        '<button class="icon-btn" data-act="del" data-kind="issues" data-id="'+i.id+'" title="删除">'+svg('trash',15)+'</button>'+
+        '</div></div>';
+    }).join('');
+  }
+}
+
+/* --- 经验沉淀页 --- */
+function renderLessons(){
+  var el = document.getElementById('lessonsList');
+  if(!el) return;
+  var all = byWeek('lessons', state.week);
+  var list = sortList(filterList('lessons', ['title','content','tags']), 'lessons');
+  if(!all.length){
+    el.innerHTML = '<div class="empty">'+svg('book',40)+'<p>本周还没有沉淀经验</p><span>经验、教训、要停止的事，都可以写在这里</span>'+
+      '<button class="btn btn-primary btn-sm" style="margin-top:14px" data-act="add" data-kind="lessons">新增经验</button></div>';
+  }else if(!list.length){
+    el.innerHTML = '<div class="empty">'+svg('search',36)+'<p>没有匹配的结果</p><span>试试其它关键词或清除筛选</span></div>';
+  }else{
+    el.innerHTML = list.map(function(l){
+      var tc = l.type==='经验'?'g':(l.type==='教训'?'a':'r');
+      return '<div class="row"><span class="stat-ico" style="background:#E8EEF5;color:#1E3A5F;flex:0 0 28px">'+svg('book',15)+'</span>'+
+        '<div class="row-main"><div class="row-title">'+esc(l.title)+' <span class="tag '+tc+'">'+esc(l.type)+'</span></div>'+
+        '<div class="row-meta"><span>可复用度</span>'+starSVG(l.reuse||0)+
+        (l.tags&&l.tags.length? l.tags.map(function(g){return '<span class="tag">#'+esc(g)+'</span>';}).join('') : '')+'</div>'+
+        '<div class="row-note" style="margin-top:8px">'+esc(l.content)+'</div>'+
+        '</div><div class="row-actions">'+
+        '<button class="icon-btn" data-act="edit" data-kind="lessons" data-id="'+l.id+'" title="编辑">'+svg('edit',15)+'</button>'+
+        '<button class="icon-btn" data-act="del" data-kind="lessons" data-id="'+l.id+'" title="删除">'+svg('trash',15)+'</button>'+
+        '</div></div>';
+    }).join('');
+  }
+}
+
+/* --- 下周计划页 --- */
+function renderPlans(){
+  var el = document.getElementById('plansList');
+  if(!el) return;
+  var all = byWeek('plans', state.week);
+  var list = sortList(filterList('plans', ['title','note']), 'plans');
+  if(!all.length){
+    el.innerHTML = '<div class="empty">'+svg('flag',40)+'<p>本周还没有行动计划</p><span>可以从「从本周迁移未完成」快速生成</span>'+
+      '<div style="display:flex;gap:8px;justify-content:center;margin-top:14px;flex-wrap:wrap">'+
+      '<button class="btn btn-sm" data-act="migrate">从本周迁移未完成</button>'+
+      '<button class="btn btn-primary btn-sm" data-act="add" data-kind="plans">新增计划</button></div></div>';
+  }else if(!list.length){
+    el.innerHTML = '<div class="empty">'+svg('search',36)+'<p>没有匹配的结果</p><span>试试其它关键词或清除筛选</span></div>';
+  }else{
+    el.innerHTML = dualHTML(list, planRow);
+  }
+  renderPlanPriority();
+  renderPlanProgress();
+}
+function planRow(p){
+  var t = todayStr();
+  var od = p.status!=='已完成' && p.date && p.date < t;
+  var pc = p.priority==='P0'?'pill-red':(p.priority==='P1'?'pill-amber':'pill-navy');
+  var sc = p.status==='已完成'?'pill-green':(p.status==='进行中'?'pill-amber':'pill-navy');
+  return '<div class="row'+(od?' overdue':'')+'">'+
+    '<button class="checkbox'+(p.status==='已完成'?' on':'')+'" data-act="toggle-plan" data-id="'+p.id+'" aria-label="切换状态">'+(p.status==='已完成'?svg('check',12):'')+'</button>'+
+    '<div class="row-main"><div class="row-title">'+esc(p.title)+' <span class="pill '+pc+'">'+esc(p.priority)+'</span><span class="pill '+sc+'">'+esc(p.status)+'</span>'+
+    (od?'<span class="pill pill-red">逾期</span>':'')+'</div>'+
+    '<div class="row-meta">'+svg('calendar',12)+'<span>'+esc(p.date||'未设置')+'</span>'+
+    (p.from?'<span class="tag">'+esc(p.from)+'</span>':'')+'</div>'+
+    '<div class="pbar"><i style="width:'+(p.progress||0)+'%"></i></div>'+
+    (p.note?'<div class="row-note">'+esc(p.note)+'</div>':'')+
+    '</div><div class="row-actions">'+
+    '<button class="icon-btn" data-act="defer-plan" data-id="'+p.id+'" title="顺延到下周">'+svg('arrowRight',15)+'</button>'+
+    '<button class="icon-btn" data-act="edit" data-kind="plans" data-id="'+p.id+'" title="编辑">'+svg('edit',15)+'</button>'+
+    '<button class="icon-btn" data-act="del" data-kind="plans" data-id="'+p.id+'" title="删除">'+svg('trash',15)+'</button>'+
+    '</div></div>';
+}
+function renderPlanPriority(){
+  var el = document.getElementById('planPriority');
+  if(!el) return;
+  var all = byWeek('plans', state.week);
+  var order = ['P0','P1','P2','P3'], colors = {'P0':'#C85A4F','P1':'#D9963C','P2':'#2C5282','P3':'#3E9B72'};
+  var items = order.map(function(p){
+    return {k:p, v:all.filter(function(x){return x.priority===p;}).length, c:colors[p]};
+  }).filter(function(x){ return x.v>0; });
+  if(!items.length){ el.innerHTML = emptyChart('暂无计划数据'); return; }
+  el.innerHTML = hbarSVG(items);
+}
+function renderPlanProgress(){
+  var el = document.getElementById('planProgress');
+  if(!el) return;
+  var all = byWeek('plans', state.week);
+  if(!all.length){ el.innerHTML = emptyChart('暂无计划数据'); return; }
+  var done = all.filter(function(p){return p.status==='已完成';}).length;
+  var doing = all.filter(function(p){return p.status==='进行中';}).length;
+  var todo = all.filter(function(p){return p.status==='待开始';}).length;
+  var avg = Math.round(all.reduce(function(s,p){ return s + (Number(p.progress)||0); },0)/all.length);
+  var od = all.filter(function(p){ return p.status!=='已完成' && p.date && p.date < todayStr(); }).length;
+  el.innerHTML = donutSVG(all.length?Math.round(done/all.length*100):0, '#3E9B72', done+'/'+all.length, '已完成') +
+    '<div class="kv" style="margin-top:6px">'+
+    '<div class="kv-row"><span class="kv-k">进行中</span><span class="kv-v">'+doing+'</span></div>'+
+    '<div class="kv-row"><span class="kv-k">待开始</span><span class="kv-v">'+todo+'</span></div>'+
+    '<div class="kv-row"><span class="kv-k">平均进度</span><span class="kv-v">'+avg+'%</span></div>'+
+    '<div class="kv-row"><span class="kv-k">逾期未办</span><span class="kv-v" style="color:'+(od?'var(--red)':'var(--navy)')+'">'+od+'</span></div>'+
+    '</div>';
+}
+
+/* --- 周能量评分（计算层 + 渲染层） --- */
+function energyLevel(e){
+  if(e === null || e === undefined) return {label:'未评分', color:'#B9B3A4'};
+  if(e <= 3) return {label:'偏低', color:'#C85A4F'};
+  if(e <= 5) return {label:'一般', color:'#D9963C'};
+  if(e <= 7) return {label:'不错', color:'#5BB08A'};
+  return {label:'充沛', color:'#3E9B72'};
+}
+/* 能量折线：null（未评分）处断开，不连成误导性直线 */
+function energyLineSVG(points){
+  var W = 460, H = 180, padL = 30, padB = 28, padT = 14, padR = 10, max = 10, min = 0;
+  var n = points.length;
+  if(!n) return emptyChart('暂无数据');
+  var stepX = (W - padL - padR) / Math.max(1, (n-1));
+  var py = function(v){ return padT + (H - padT - padB) * (1 - (v - min) / (max - min)); };
+  var s = '<svg viewBox="0 0 '+W+' '+H+'" style="width:100%;min-width:340px;height:'+H+'px" preserveAspectRatio="xMidYMid meet">';
+  [0,5,10].forEach(function(g){
+    var y = py(g);
+    s += '<line x1="'+padL+'" y1="'+y.toFixed(1)+'" x2="'+(W-padR)+'" y2="'+y.toFixed(1)+'" stroke="#EFEADE"/>';
+    s += '<text x="'+(padL-6)+'" y="'+(y+4).toFixed(1)+'" text-anchor="end" font-size="10" fill="#8493A2">'+g+'</text>';
+  });
+  var d = '', open = false;
+  for(var i=0;i<n;i++){
+    var p = points[i];
+    if(p.v === null){ open = false; continue; }
+    var x = padL + stepX*i;
+    d += (open ? 'L' : 'M') + x.toFixed(1) + ' ' + py(p.v).toFixed(1) + ' ';
+    open = true;
+  }
+  if(d) s += '<path d="'+d+'" fill="none" stroke="#D9963C" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/>';
+  for(var j=0;j<n;j++){
+    var q = points[j];
+    if(q.v === null) continue;
+    var xx = padL + stepX*j, yy = py(q.v);
+    s += '<circle cx="'+xx.toFixed(1)+'" cy="'+yy.toFixed(1)+'" r="'+(q.cur?4.5:3.2)+'" fill="'+(q.cur?'#1E3A5F':'#FFFFFF')+'" stroke="#D9963C" stroke-width="2"><title>'+esc(q.label)+' 周：'+q.v+' 分</title></circle>';
+    s += '<text x="'+xx.toFixed(1)+'" y="'+(H-9)+'" text-anchor="middle" font-size="9.5" fill="#8493A2">'+esc(q.label)+'</text>';
+  }
+  return s + '</svg>';
+}
+function renderEnergy(){
+  var sEl = document.getElementById('energyScore');
+  var mEl = document.getElementById('energyMeta');
+  var tEl = document.getElementById('energyTrend');
+  var hEl = document.getElementById('energyHint');
+  var r = getReview(state.week);
+  var e = (r && typeof r.energy === 'number') ? r.energy : null;
+  var lv = energyLevel(e);
+  if(sEl){
+    sEl.innerHTML = '<div class="energy-score" style="background:'+lv.color+'">'+
+      '<b>'+(e === null ? '—' : e)+'</b><span>'+(e === null ? '未评分' : '分 / 10')+'</span></div>';
+  }
+  if(mEl){
+    var scale = '';
+    for(var i=1;i<=10;i++){
+      scale += '<i style="background:'+((e !== null && i <= e) ? lv.color : '#EFEADE')+'"></i>';
+    }
+    var prev = getReview(shiftWeek(state.week, -1));
+    var pe = (prev && typeof prev.energy === 'number') ? prev.energy : null;
+    var dTxt = (e === null) ? '本周尚未评分' :
+      (pe === null ? '上周无评分，暂无法对比' : (e === pe ? '与上周持平' : (e > pe ? '较上周 +' : '较上周 ') + (e - pe) + ' 分'));
+    mEl.innerHTML = '<div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap">'+
+      '<span class="pill" style="background:'+lv.color+'22;color:'+lv.color+'">'+lv.label+'</span>'+
+      '<span class="hint">'+esc(dTxt)+'</span></div>'+
+      '<div class="energy-scale">'+scale+'</div>'+
+      ((r && r.energyNote) ? '<div class="energy-note">'+esc(r.energyNote)+'</div>'
+                           : '<div class="hint" style="margin-top:10px">点右上角「填写本周能量」记录这周的精力状态与备注</div>');
+  }
+  if(hEl) hEl.textContent = (e === null) ? '本周尚未评分' : '';
+  if(tEl){
+    var pts = last8Weeks(state.week).map(function(k){
+      var rr = getReview(k);
+      return {v:(rr && typeof rr.energy === 'number') ? rr.energy : null, label:k.replace(/^\d{4}-W/,''), cur:k === state.week};
+    });
+    var has = pts.filter(function(p){ return p.v !== null; });
+    tEl.innerHTML = has.length
+      ? energyLineSVG(pts) + '<div class="legend-row"><span><i style="background:#1E3A5F"></i>当前周</span><span><i style="background:#D9963C"></i>能量分（1-10）</span></div>'
+      : emptyChart('近 8 周还没有能量评分，填写后自动生成趋势');
+  }
+}
+/* 同步所有「工作 / 生活」切换控件的选中态 */
+function renderDomainSegs(){
+  var segs = document.querySelectorAll('.js-domseg button');
+  for(var i=0;i<segs.length;i++){
+    segs[i].classList.toggle('on', segs[i].getAttribute('data-dom') === state.domain);
+  }
+}
+
+/* --- 季度回顾：全部由周记录聚合计算，不新增任何存储结构 --- */
+function quarterWeeks(y, q){
+  var start = (q - 1) * 13 + 1;
+  var end = (q === 4) ? weeksInYear(y) : q * 13;
+  var arr = [];
+  for(var i = start; i <= end; i++) arr.push(y + '-W' + pad(i));
+  return arr;
+}
+function curQuarter(){
+  var d = new Date();
+  return {y: d.getFullYear(), q: Math.min(4, Math.floor(d.getMonth() / 3) + 1)};
+}
+function quarterYears(){
+  var set = {};
+  ['reviews','tasks','metrics','highlights','issues','lessons','plans'].forEach(function(k){
+    DB[k].forEach(function(it){
+      if(it.week) set[parseInt(String(it.week).split('-W')[0], 10)] = true;
+    });
+  });
+  var cy = parseInt(String(isoWeekKey(new Date())).split('-W')[0], 10);
+  set[cy] = true; set[cy - 1] = true;
+  return Object.keys(set).map(Number).sort(function(a, b){ return b - a; });
+}
+function ensureQuarter(){
+  if(!state.quarter || !state.quarter.y) state.quarter = curQuarter();
+  return state.quarter;
+}
+function calcQuarterStats(y, q){
+  var weeks = quarterWeeks(y, q);
+  var tasks = [], hls = [], iss = [], les = [], mets = [], plans = [], reviews = [], energies = [];
+  weeks.forEach(function(k){
+    tasks = tasks.concat(byWeek('tasks', k));
+    hls   = hls.concat(byWeek('highlights', k));
+    iss   = iss.concat(byWeek('issues', k));
+    les   = les.concat(byWeek('lessons', k));
+    mets  = mets.concat(byWeek('metrics', k));
+    plans = plans.concat(byWeek('plans', k));
+    var r = getReview(k);
+    if(r){
+      reviews.push(r);
+      if(typeof r.energy === 'number') energies.push(r.energy);
+    }
+  });
+  var done = tasks.filter(function(t){ return t.status === '已完成'; }).length;
+  var goalRates = reviews.filter(function(r){ return typeof r.progress === 'number' && r.goal; })
+                         .map(function(r){ return r.progress; });
+  var avgGoal = goalRates.length ? Math.round(goalRates.reduce(function(a,b){ return a+b; }, 0) / goalRates.length) : null;
+  var avgEnergy = energies.length ? Math.round(energies.reduce(function(a,b){ return a+b; }, 0) / energies.length * 10) / 10 : null;
+  var activeWeeks = weeks.filter(function(k){ return calcWeekStats(k).weight > 0; }).length;
+  return {
+    weeks:weeks, activeWeeks:activeWeeks,
+    tasks:tasks, done:done, rate: tasks.length ? Math.round(done / tasks.length * 100) : 0,
+    highlights:hls, issues:iss, lessons:les, metrics:mets, plans:plans, reviews:reviews,
+    energies:energies, avgGoal:avgGoal, avgEnergy:avgEnergy,
+    trend: weeks.map(function(k){
+      var r = getReview(k);
+      var st = calcWeekStats(k);
+      return {v:(r && typeof r.energy === 'number') ? r.energy : null, done:st.done,
+              label:k.replace(/^\d{4}-W/,''), cur:k === state.week};
+    })
+  };
+}
+function renderQuarter(){
+  var q = ensureQuarter();
+  var ySel = document.getElementById('q-year');
+  if(ySel){
+    var ys = quarterYears();
+    if(ys.indexOf(q.y) < 0){ ys.push(q.y); ys.sort(function(a,b){ return b-a; }); }
+    ySel.innerHTML = ys.map(function(y){
+      return '<option value="'+y+'"'+(String(y) === String(q.y) ? ' selected' : '')+'>'+y+' 年</option>';
+    }).join('');
+  }
+  var qSel = document.getElementById('q-quarter');
+  if(qSel) qSel.value = String(q.q);
+
+  var st = calcQuarterStats(q.y, q.q);
+  var wks = st.weeks;
+  var lbl = document.getElementById('qRangeLabel');
+  if(lbl){
+    lbl.textContent = '统计范围：' + wks[0] + ' 至 ' + wks[wks.length-1] +
+      '（按 ISO 周划分，共 ' + wks.length + ' 周）· ' + weekLabel(wks[0]) + ' 起';
+  }
+
+  var cells = [
+    {k:'完成事项',      v:st.done + '<small>/ ' + st.tasks.length + ' 项</small>'},
+    {k:'事项完成率',    v:st.rate + '<small>%</small>'},
+    {k:'平均目标完成率', v:(st.avgGoal === null ? '—' : st.avgGoal + '<small>%</small>')},
+    {k:'平均周能量',    v:(st.avgEnergy === null ? '—' : st.avgEnergy + '<small>分</small>')}
+  ];
+  var sEl = document.getElementById('qStats');
+  if(sEl){
+    sEl.innerHTML = cells.map(function(c){
+      return '<div class="q-cell"><div class="qk">'+c.k+'</div><div class="qv">'+c.v+'</div></div>';
+    }).join('') +
+    '<div class="q-cell"><div class="qk">有记录周数</div><div class="qv">'+st.activeWeeks+'<small>/ '+wks.length+' 周</small></div></div>' +
+    '<div class="q-cell"><div class="qk">高光 / 问题</div><div class="qv">'+st.highlights.length+'<small>件 /</small> '+st.issues.length+'<small>个</small></div></div>' +
+    '<div class="q-cell"><div class="qk">经验沉淀</div><div class="qv">'+st.lessons.length+'<small>条</small></div></div>' +
+    '<div class="q-cell"><div class="qk">工作 / 生活 占比</div><div class="qv" style="font-size:17px">'+
+      domSplitText(st.tasks)+'</div></div>';
+  }
+
+  var cEl = document.getElementById('qEnergyChart');
+  if(cEl){
+    var has = st.trend.filter(function(p){ return p.v !== null; });
+    cEl.innerHTML = has.length
+      ? energyLineSVG(st.trend) + '<div class="legend-row"><span><i style="background:#D9963C"></i>周能量分（1-10）</span><span><i style="background:#1E3A5F"></i>当前选中周</span></div>'
+      : emptyChart('该季度还没有能量评分记录');
+  }
+
+  var mEl = document.getElementById('qMonths');
+  if(mEl){
+    var months = [];
+    for(var m = (q.q - 1) * 3 + 1; m <= q.q * 3; m++){
+      var mw = wks.filter(function(k){ return weekRange(k).start.getMonth() + 1 === m; });
+      var mt = [], mh = [];
+      mw.forEach(function(k){
+        mt = mt.concat(byWeek('tasks', k).filter(function(t){ return t.status === '已完成'; }));
+        mh = mh.concat(byWeek('highlights', k));
+      });
+      var mdone = mt.length;
+      var mPlan = mw.reduce(function(s,k){ return s + byWeek('plans',k).length; }, 0);
+      months.push({m:m, tasks:mt, hls:mh, done:mdone, plans:mPlan});
+    }
+    mEl.innerHTML = months.map(function(mo){
+      var top = mo.tasks.slice(0, 5);
+      return '<div class="q-card"><h4>'+mo.m+' 月<span class="pill pill-green">完成 '+mo.done+' 项</span></h4>'+
+        (top.length
+          ? '<ul class="q-list">' + top.map(function(t){ return '<li>'+esc(t.title)+'</li>'; }).join('') +
+            (mo.tasks.length > 5 ? '<li style="list-style:none;color:var(--muted)">…等共 '+mo.tasks.length+' 项</li>' : '') + '</ul>'
+          : '<div class="q-empty">该月暂无完成记录</div>') +
+        (mo.hls.length ? '<div class="row-meta" style="margin-top:9px">'+svg('star',12)+'<span>高光 '+mo.hls.length+' 件：'+esc(mo.hls[0].title)+'</span></div>' : '') +
+      '</div>';
+    }).join('');
+  }
+
+  var hEl = document.getElementById('qHighlights');
+  if(hEl){
+    var top = st.highlights.slice().sort(function(a,b){ return (b.score||0) - (a.score||0); }).slice(0, 6);
+    hEl.innerHTML = top.length
+      ? '<ul class="q-list">' + top.map(function(h){
+          return '<li><strong>'+esc(h.title)+'</strong>（'+(h.score||0)+' 分）'+domTag(h)+
+            (h.note ? '<br><span style="color:var(--muted)">'+esc(h.note)+'</span>' : '')+'</li>';
+        }).join('') + '</ul>'
+      : '<div class="q-empty">该季度暂无高光记录</div>';
+  }
+
+  var lEl = document.getElementById('qLessons');
+  if(lEl){
+    var byType = {经验:[], 教训:[], 停止事项:[]};
+    st.lessons.forEach(function(l){ (byType[l.type] || byType['经验']).push(l); });
+    var byStatus = {待处理:0, 处理中:0, 已解决:0};
+    st.issues.forEach(function(i){ if(byStatus[i.status] !== undefined) byStatus[i.status]++; });
+    var h = '<div class="kv">';
+    Object.keys(byType).forEach(function(t){
+      if(!byType[t].length) return;
+      h += '<div class="kv-row"><span class="kv-k">'+t+'</span><span class="kv-v">'+byType[t].length+' 条</span></div>';
+    });
+    if(!st.lessons.length) h += '<div class="kv-row"><span class="kv-k">经验沉淀</span><span class="kv-v">—</span></div>';
+    h += '<div class="kv-row"><span class="kv-k">问题 · 已解决</span><span class="kv-v" style="color:var(--green)">'+byStatus['已解决']+'</span></div>';
+    h += '<div class="kv-row"><span class="kv-k">问题 · 处理中 / 待处理</span><span class="kv-v" style="color:'+(byStatus['待处理']?'var(--red)':'var(--navy)')+'">'+byStatus['处理中']+' / '+byStatus['待处理']+'</span></div>';
+    h += '</div>';
+    var stops = byType['停止事项'];
+    if(stops.length){
+      h += '<div class="row-meta" style="margin-top:10px">'+svg('alert',12)+'<span>本季度要停止的：'+
+        stops.slice(0,3).map(function(s){ return esc(s.title); }).join('、')+'</span></div>';
+    }
+    lEl.innerHTML = h;
+  }
+}
+/* 工作 / 生活 占比文案 */
+function domSplitText(list){
+  if(!list.length) return '—';
+  var w = list.filter(function(it){ return domOf(it) === '工作'; }).length;
+  var l = list.length - w;
+  var pw = Math.round(w / list.length * 100);
+  return '工作 ' + pw + '% / 生活 ' + (100 - pw) + '%';
+}
+function buildQuarterDraft(y, q){
+  var st = calcQuarterStats(y, q);
+  var L = [];
+  L.push('【' + y + ' 年 Q' + q + ' 季度回顾】');
+  L.push('');
+  L.push('一、季度概览');
+  L.push('· 统计范围：' + st.weeks[0] + ' 至 ' + st.weeks[st.weeks.length-1] + '（共 ' + st.weeks.length + ' 周，其中 ' + st.activeWeeks + ' 周有记录）');
+  L.push('· 完成事项：' + st.done + ' / ' + st.tasks.length + ' 项（完成率 ' + st.rate + '%）');
+  L.push('· 平均目标完成率：' + (st.avgGoal === null ? '未记录' : st.avgGoal + '%'));
+  L.push('· 平均周能量：' + (st.avgEnergy === null ? '未记录' : st.avgEnergy + ' 分 / 10'));
+  L.push('· 工作与生活占比：' + domSplitText(st.tasks));
+  L.push('');
+  L.push('二、分月回顾');
+  for(var m = (q - 1) * 3 + 1; m <= q * 3; m++){
+    var mw = st.weeks.filter(function(k){ return weekRange(k).start.getMonth() + 1 === m; });
+    var mt = [], mh = [], mi = [];
+    mw.forEach(function(k){
+      mt = mt.concat(byWeek('tasks', k).filter(function(t){ return t.status === '已完成'; }));
+      mh = mh.concat(byWeek('highlights', k));
+      mi = mi.concat(byWeek('issues', k));
+    });
+    L.push('· ' + m + ' 月：完成 ' + mt.length + ' 项，高光 ' + mh.length + ' 件，问题 ' + mi.length + ' 个');
+    mt.slice(0, 4).forEach(function(t){ L.push('　- ' + t.title); });
+  }
+  L.push('');
+  L.push('三、季度高光（共 ' + st.highlights.length + ' 件，按价值分排序）');
+  if(st.highlights.length){
+    st.highlights.slice().sort(function(a,b){ return (b.score||0) - (a.score||0); }).slice(0, 8).forEach(function(h){
+      L.push('· ' + h.title + '（' + (h.score||0) + ' 分，' + domOf(h) + '）' + (h.note ? '：' + h.note : ''));
+    });
+  }else L.push('（暂无）');
+  L.push('');
+  L.push('四、问题与经验');
+  if(st.issues.length){
+    st.issues.forEach(function(i){
+      L.push('· 问题：' + i.title + '（影响 ' + i.impact + '，' + i.status + '）');
+      if(i.reason) L.push('　原因：' + i.reason);
+    });
+  }else L.push('（本季度无问题记录）');
+  var byType = {经验:[], 教训:[], 停止事项:[]};
+  st.lessons.forEach(function(l){ (byType[l.type] || byType['经验']).push(l); });
+  Object.keys(byType).forEach(function(t){
+    if(!byType[t].length) return;
+    L.push('· ' + t + '：');
+    byType[t].slice(0, 6).forEach(function(l){ L.push('　- ' + l.title + (l.content ? '：' + l.content : '')); });
+  });
+  L.push('');
+  L.push('五、下季度重点');
+  var nextPlans = st.plans.filter(function(p){ return p.status !== '已完成'; });
+  if(nextPlans.length){
+    nextPlans.slice().sort(function(a,b){
+      var o = {P0:0,P1:1,P2:2,P3:3};
+      return (o[a.priority] === undefined ? 9 : o[a.priority]) - (o[b.priority] === undefined ? 9 : o[b.priority]);
+    }).slice(0, 10).forEach(function(p, i){
+      L.push((i+1) + '. [' + p.priority + '] ' + p.title + '（' + (p.date || '待定') + '）');
+    });
+  }else L.push('（待补充）');
+  L.push('');
+  L.push('—— 由「每周复盘工作台」按季度自动汇总，可自由编辑');
+  return L.join('\n');
+}
+function genQuarterDraft(){
+  var box = document.getElementById('quarterDraftBox');
+  if(!box) return;
+  var q = ensureQuarter();
+  box.value = buildQuarterDraft(q.y, q.q);
+  toast('季度草稿已生成，可自由编辑', 'ok');
+}
+function copyQuarterDraft(){
+  var box = document.getElementById('quarterDraftBox');
+  if(!box) return;
+  if(!box.value.trim()){ toast('请先生成草稿', 'err'); return; }
+  box.select(); box.setSelectionRange(0, 999999);
+  var ok = false;
+  try{ ok = document.execCommand('copy'); }catch(e){ ok = false; }
+  if(!ok && navigator.clipboard){
+    navigator.clipboard.writeText(box.value).then(function(){ toast('已复制到剪贴板', 'ok'); },
+      function(){ toast('复制失败，请手动选择复制', 'err'); });
+  }else{
+    toast(ok ? '已复制到剪贴板' : '复制失败，请手动选择复制', ok ? 'ok' : 'err');
+  }
+}
+
+/* ---------------- 统一刷新入口（唯一允许调用多个渲染函数的地方） ---------------- */
+function refreshAll(){
+  renderNav();
+  renderWeekBar();
+  renderSaveTime();
+  renderGreeting();
+  renderToday();
+  renderHomeStats();
+  renderTrend();
+  renderYearHeat();
+  renderHomeHighlights();
+  renderHomeUndone();
+  renderHomePlans();
+  renderHomeRecent();
+  renderReviewBlock();
+  renderMetrics();
+  renderTasks();
+  renderHL();
+  renderLessons();
+  renderPlans();
+  renderQuarter();
+  renderEnergy();
+  renderDomainSegs();
+}
+
+/* ---------------- 视图切换 ---------------- */
+function go(view){
+  if(!NAV.some(function(n){ return n.id===view; })) view = 'home';
+  state.view = view;
+  NAV.forEach(function(n){
+    var el = document.getElementById('view-'+n.id);
+    if(el) el.classList.toggle('active', n.id===view);
+  });
+  renderNav();
+  closeMenu();
+  window.scrollTo({top:0, behavior:'smooth'});
+}
+
+/* ---------------- 表单弹窗 ---------------- */
+function openForm(kind, id){
+  var schema = SCHEMAS[kind];
+  if(!schema) return;
+  var item = null;
+  if(id){ item = listOf(kind).filter(function(x){ return x.id===id; })[0] || null; }
+  if(kind === 'review'){ item = getReview(state.week); }
+  state.form = {kind:kind, id:(kind==='review'? (item?item.id:null) : (id||null)), tags:(item&&item.tags)?item.tags.slice():[]};
+
+  var h = '';
+  schema.fields.forEach(function(f){
+    var v = item ? item[f.key] : (f.def !== undefined ? f.def : '');
+    h += '<div class="field" data-field="'+f.key+'">';
+    h += '<label>'+esc(f.label)+(f.required?'<span class="req">*</span>':'')+'</label>';
+    if(f.type === 'text'){
+      h += '<input type="text" data-key="'+f.key+'" value="'+esc(v)+'" placeholder="'+esc(f.ph||'')+'">';
+    }else if(f.type === 'number'){
+      h += '<input type="number" data-key="'+f.key+'" value="'+esc(v)+'" placeholder="'+esc(f.ph||'')+'" step="'+(f.step||'1')+'" inputmode="decimal">';
+    }else if(f.type === 'date'){
+      h += '<input type="date" data-key="'+f.key+'" value="'+esc(v)+'">';
+    }else if(f.type === 'select'){
+      h += '<select data-key="'+f.key+'">';
+      (f.options||[]).forEach(function(o){
+        h += '<option value="'+esc(o)+'"'+(String(o)===String(v)?' selected':'')+'>'+esc(o)+'</option>';
+      });
+      h += '</select>';
+    }else if(f.type === 'textarea'){
+      h += '<textarea data-key="'+f.key+'" placeholder="'+esc(f.ph||'')+'">'+esc(v)+'</textarea>';
+    }else if(f.type === 'range'){
+      h += '<div class="range-wrap"><input type="range" data-key="'+f.key+'" min="'+f.min+'" max="'+f.max+'" step="'+f.step+'" value="'+(v===undefined||v===''?f.min:v)+'" data-range="1">'+
+        '<span class="range-val" data-rv="'+f.key+'">'+(v===undefined||v===''?f.min:v)+(f.unit||'')+'</span></div>';
+    }else if(f.type === 'tags'){
+      h += '<div class="tag-input"><span data-tagbox="1">'+
+        state.form.tags.map(function(t){ return '<span class="tag-chip">#'+esc(t)+'<button data-act="tag-remove" data-tag="'+esc(t)+'">'+svg('close',10)+'</button></span>'; }).join('')+
+        '</span><input type="text" data-taginput="1" placeholder="'+esc(f.ph||'')+'"></div>';
+      h += '<div class="field-help">输入后按回车（或逗号）添加标签</div>';
+    }
+    h += '<div class="f-err" data-err="'+f.key+'"></div>';
+    h += '</div>';
+  });
+  if(kind !== 'review'){
+    var range = weekRange(state.week);
+    h += '<div class="field-help" style="border-top:1px dashed var(--border);padding-top:12px">'+
+      svg('calendar',12)+' 归属周次：'+state.week+'（'+(range.start.getMonth()+1)+'月'+range.start.getDate()+'日 - '+(range.end.getMonth()+1)+'月'+range.end.getDate()+'日）</div>';
+  }
+  document.getElementById('formBody').innerHTML = h;
+  document.getElementById('formTitle').textContent = (id||kind==='review' ? '编辑' : '新增') + schema.title;
+  document.getElementById('formSubmit').textContent = '保存';
+  openOverlay('formOverlay');
+  setTimeout(function(){
+    var first = document.querySelector('#formBody input[type=text], #formBody textarea');
+    if(first && window.innerWidth > 768) first.focus();
+  }, 60);
+}
+function collectForm(){
+  var schema = SCHEMAS[state.form.kind];
+  var body = document.getElementById('formBody');
+  var data = {}, ok = true, firstErr = null;
+  schema.fields.forEach(function(f){
+    var wrap = body.querySelector('[data-field="'+f.key+'"]');
+    if(!wrap) return;
+    var errEl = wrap.querySelector('[data-err]');
+    var val;
+    if(f.type === 'tags'){ val = state.form.tags.slice(); }
+    else{
+      var el = wrap.querySelector('[data-key="'+f.key+'"]');
+      val = el ? el.value : '';
+      if(f.type === 'number') val = val === '' ? '' : Number(val);
+      if(f.type === 'range') val = Number(val);
+      if(f.type === 'text' || f.type === 'textarea') val = String(val).trim();
+    }
+    var empty = (f.type === 'tags') ? false : (val === '' || val === null || val === undefined);
+    if(f.required && empty){
+      ok = false;
+      if(errEl){ errEl.textContent = '请填写「' + f.label + '」'; errEl.classList.add('show'); }
+      var inp = wrap.querySelector('input,textarea,select');
+      if(inp) inp.classList.add('err');
+      if(!firstErr) firstErr = inp;
+    }else{
+      if(errEl){ errEl.classList.remove('show'); }
+      var inp2 = wrap.querySelector('input,textarea,select');
+      if(inp2) inp2.classList.remove('err');
+    }
+    data[f.key] = val;
+  });
+  if(!ok){
+    if(firstErr) firstErr.focus();
+    toast('请先补全必填项', 'err');
+    return null;
+  }
+  return data;
+}
+function submitForm(){
+  var data = collectForm();
+  if(!data) return;
+  var kind = state.form.kind;
+  var now = new Date().toISOString();
+  if(kind === 'review'){
+    var r = ensureReview(state.week);
+    r.domain = data.domain || r.domain || '工作';
+    r.goal = data.goal; r.progress = data.progress;
+    r.energy = data.energy; r.mood = data.mood;
+    r.summary = data.summary; r.energyNote = data.energyNote || '';
+    r.updatedAt = now;
+    pushLog('更新' + state.week + '目标');
+  }else if(state.form.id){
+    var it = listOf(kind).filter(function(x){ return x.id === state.form.id; })[0];
+    if(it){
+      for(var k in data) it[k] = data[k];
+      it.updatedAt = now;
+      pushLog('编辑' + SCHEMAS[kind].title + '：' + (it.title||it.name||''));
+    }
+  }else{
+    var rec = {id:uid(), week:state.week, createdAt:now, updatedAt:now};
+    for(var k2 in data) rec[k2] = data[k2];
+    if(kind === 'tasks' || kind === 'plans'){
+      if(rec.status === '已完成') rec.progress = 100;
+    }
+    DB[kind].unshift(rec);
+    pushLog('新增' + SCHEMAS[kind].title + '：' + (rec.title||rec.name||''));
+  }
+  saveData();
+  closeOverlay('formOverlay');
+  toast('保存成功', 'ok');
+  refreshAll();
+}
+
+/* ---------------- 删除 / 确认 ---------------- */
+function askConfirm(title, msg, cb){
+  document.getElementById('confirmTitle').textContent = title;
+  document.getElementById('confirmMsg').textContent = msg;
+  state.confirmCb = cb;
+  openOverlay('confirmOverlay');
+}
+function doDelete(kind, id){
+  var list = listOf(kind);
+  var it = list.filter(function(x){ return x.id===id; })[0];
+  if(!it) return;
+  var name = it.title || it.name || '该记录';
+  askConfirm('删除确认', '确定要删除「' + name + '」吗？此操作不可撤销。', function(){
+    DB[kind] = list.filter(function(x){ return x.id !== id; });
+    pushLog('删除' + SCHEMAS[kind].title + '：' + name);
+    saveData();
+    toast('已删除', 'ok');
+    refreshAll();
+  });
+}
+
+/* ---------------- 快捷操作 ---------------- */
+function quickAction(kind, id, mode){
+  var it = listOf(kind).filter(function(x){ return x.id===id; })[0];
+  if(!it) return;
+  if(mode === 'defer'){
+    var nw = shiftWeek(state.week, 1);
+    var r = weekRange(nw);
+    it.week = nw;
+    it.date = fmtDate(r.start);
+    it.from = '顺延自 ' + state.week;
+    it.updatedAt = new Date().toISOString();
+    pushLog('顺延行动项到 ' + nw + '：' + it.title);
+    saveData();
+    toast('已顺延到 ' + nw, 'ok');
+    refreshAll();
+    return;
+  }
+  if(kind === 'tasks' || kind === 'plans'){
+    it.status = '已完成'; it.progress = 100;
+  }else if(kind === 'issues'){
+    it.status = '已解决';
+  }
+  it.updatedAt = new Date().toISOString();
+  pushLog('完成：' + (it.title||''));
+  saveData();
+  toast('已标记完成', 'ok');
+  refreshAll();
+}
+function toggleTask(id){
+  var t = DB.tasks.filter(function(x){ return x.id===id; })[0];
+  if(!t) return;
+  t.status = (t.status === '已完成') ? '进行中' : '已完成';
+  t.progress = (t.status === '已完成') ? 100 : (t.progress === 100 ? 60 : t.progress);
+  t.updatedAt = new Date().toISOString();
+  pushLog((t.status==='已完成'?'完成':'重新打开') + '事项：' + t.title);
+  saveData();
+  refreshAll();
+}
+function togglePlan(id){
+  var p = DB.plans.filter(function(x){ return x.id===id; })[0];
+  if(!p) return;
+  if(p.status === '已完成'){ p.status = '进行中'; p.progress = Math.min(60, p.progress||0); }
+  else { p.status = '已完成'; p.progress = 100; }
+  p.updatedAt = new Date().toISOString();
+  saveData();
+  refreshAll();
+}
+function migrateUndone(){
+  var nw = shiftWeek(state.week, 1);
+  var r = weekRange(nw);
+  var tasks = undoneTasksOf(state.week);
+  var issues = openIssuesOf(state.week);
+  if(!tasks.length && !issues.length){
+    toast('本周没有未完成的事项', 'err'); return;
+  }
+  askConfirm('迁移到 ' + nw, '将把本周 ' + tasks.length + ' 项未完成任务、' + issues.length + ' 个未解决问题，生成到 ' + nw + '（' + weekLabel(nw) + '）的行动项中，确定继续？', function(){
+    var n = 0, now = new Date().toISOString();
+    tasks.forEach(function(t){
+      var exists = DB.plans.some(function(p){ return p.week===nw && p.title===t.title; });
+      if(exists) return;
+      DB.plans.unshift({id:uid(), week:nw, domain:domOf(t), title:t.title, date:fmtDate(r.start), priority:'P1', status:'待开始', progress:0,
+        note:'承接上周未完成：' + (t.note||'无备注'), from:'迁移自 '+state.week, createdAt:now, updatedAt:now});
+      n++;
+    });
+    issues.forEach(function(i){
+      var title = '解决：' + i.title;
+      var exists = DB.plans.some(function(p){ return p.week===nw && p.title===title; });
+      if(exists) return;
+      DB.plans.unshift({id:uid(), week:nw, domain:domOf(i), title:title, date:fmtDate(r.start), priority: i.impact==='高'?'P0':'P2',
+        status:'待开始', progress:0, note:'原因：' + (i.reason||'未填写'), from:'迁移自 '+state.week, createdAt:now, updatedAt:now});
+      n++;
+    });
+    pushLog('迁移 ' + n + ' 项到 ' + nw);
+    saveData();
+    toast('已迁移 ' + n + ' 项到 ' + nw, 'ok');
+    refreshAll();
+  });
+}
+function toggleArchive(){
+  var r = ensureReview(state.week);
+  r.archived = !r.archived;
+  r.updatedAt = new Date().toISOString();
+  pushLog((r.archived?'归档':'取消归档') + ' ' + state.week);
+  saveData();
+  toast(r.archived ? '已归档 ' + state.week : '已取消归档', 'ok');
+  refreshAll();
+}
+
+/* ---------------- 复盘草稿（本地模板组合，不调用任何外部接口） ---------------- */
+function buildDraft(){
+  var r = getReview(state.week);
+  var tasks = byWeek('tasks', state.week);
+  var done = tasks.filter(function(t){return t.status==='已完成';});
+  var undone = tasks.filter(function(t){return t.status!=='已完成';});
+  var mets = byWeek('metrics', state.week);
+  var hls = byWeek('highlights', state.week);
+  var iss = byWeek('issues', state.week);
+  var les = byWeek('lessons', state.week);
+  var plans = byWeek('plans', shiftWeek(state.week,1));
+  var prev = calcWeekStats(shiftWeek(state.week,-1));
+  var cur = calcWeekStats(state.week);
+  var L = [];
+  L.push('【' + state.week + ' 周复盘】' + weekLabel(state.week));
+  L.push('');
+  L.push('一、本周目标');
+  L.push('· 目标：' + ((r && r.goal) ? r.goal : '（未填写）'));
+  L.push('· 完成率：' + (cur.goalRate) + '%　本周状态：' + ((r&&r.mood)||'平稳'));
+  L.push('· 一句话总结：' + ((r && r.summary) ? r.summary : '（未填写）'));
+  L.push('');
+  L.push('二、完成事项（' + done.length + '/' + tasks.length + '，上周 ' + prev.done + ' 项）');
+  if(done.length){ done.forEach(function(t,i){ L.push((i+1) + '. [' + t.category + '] ' + t.title + (t.note? '（' + t.note + '）':'')); }); }
+  else L.push('（本周暂无已完成事项）');
+  if(undone.length){
+    L.push('未完成：');
+    undone.forEach(function(t){ L.push('· [' + t.category + '] ' + t.title + '（' + t.status + '，进度 ' + (t.progress||0) + '%）'); });
+  }
+  L.push('');
+  L.push('三、关键数据');
+  if(mets.length){ mets.forEach(function(m){
+    var rate = rateOf(m);
+    L.push('· ' + m.name + '：' + m.value + (m.unit||'') + (rate>=0 ? '（达成率 ' + Math.round(rate) + '%）' : ''));
+  }); }
+  else L.push('（本周暂无关键数据）');
+  L.push('');
+  L.push('四、高光时刻（' + hls.length + ' 件）');
+  if(hls.length){ hls.slice().sort(function(a,b){return (b.score||0)-(a.score||0);}).forEach(function(h){
+    L.push('· ' + h.title + '（价值 ' + (h.score||0) + ' 分）：' + (h.note||''));
+  }); }
+  else L.push('（本周暂无高光记录）');
+  L.push('');
+  L.push('五、问题与原因（' + iss.length + ' 个）');
+  if(iss.length){ iss.forEach(function(i){
+    L.push('· ' + i.title + '｜影响：' + i.impact + '｜状态：' + i.status);
+    L.push('　原因：' + (i.reason||'未填写'));
+    if(i.action) L.push('　改进：' + i.action);
+  }); }
+  else L.push('（本周暂无问题记录）');
+  L.push('');
+  L.push('六、经验沉淀（' + les.length + ' 条）');
+  var byType = {经验:[],教训:[],停止事项:[]};
+  les.forEach(function(l){ (byType[l.type] || byType['经验']).push(l); });
+  Object.keys(byType).forEach(function(tp){
+    if(!byType[tp].length) return;
+    L.push('· ' + tp + '：');
+    byType[tp].forEach(function(l){ L.push('　- ' + l.title + '：' + l.content); });
+  });
+  if(!les.length) L.push('（本周暂无经验沉淀）');
+  L.push('');
+  L.push('七、下周行动（' + plans.length + ' 项）');
+  if(plans.length){
+    plans.slice().sort(function(a,b){return prW(a.priority)-prW(b.priority);}).forEach(function(p,i){
+      L.push((i+1) + '. [' + p.priority + '] ' + p.title + '（' + (p.date||'待定') + '）');
+    });
+  }else L.push('（下周计划待补充）');
+  L.push('');
+  L.push('—— 由「每周复盘工作台」本地模板生成，可自由编辑');
+  return L.join('\n');
+}
+function genDraft(){
+  var box = document.getElementById('draftBox');
+  if(!box) return;
+  box.value = buildDraft();
+  toast('草稿已生成，可自由编辑', 'ok');
+}
+function copyDraft(){
+  var box = document.getElementById('draftBox');
+  if(!box) return;
+  if(!box.value.trim()){ toast('请先生成草稿', 'err'); return; }
+  box.select(); box.setSelectionRange(0, 999999);
+  var ok = false;
+  try{ ok = document.execCommand('copy'); }catch(e){ ok = false; }
+  if(!ok && navigator.clipboard){
+    navigator.clipboard.writeText(box.value).then(function(){ toast('已复制到剪贴板', 'ok'); },
+      function(){ toast('复制失败，请手动选择复制', 'err'); });
+  }else{
+    toast(ok ? '已复制到剪贴板' : '复制失败，请手动选择复制', ok ? 'ok' : 'err');
+  }
+}
+
+/* ---------------- 数据备份：导出 / 导入 / 清空 ---------------- */
+function exportJSON(){
+  var payload = {app:'weekly-review-desk', version:1, exportedAt:new Date().toISOString(), data:DB};
+  var blob = new Blob([JSON.stringify(payload, null, 2)], {type:'application/json'});
+  var url = URL.createObjectURL(blob);
+  var a = document.createElement('a');
+  var d = new Date();
+  a.href = url;
+  a.download = '每周复盘备份_' + d.getFullYear() + pad(d.getMonth()+1) + pad(d.getDate()) + '_' + pad(d.getHours()) + pad(d.getMinutes()) + '.json';
+  document.body.appendChild(a); a.click();
+  setTimeout(function(){ document.body.removeChild(a); URL.revokeObjectURL(url); }, 200);
+  pushLog('导出 JSON 备份');
+  saveData(true);
+  toast('备份文件已导出', 'ok');
+}
+function importJSON(file){
+  var reader = new FileReader();
+  reader.onload = function(){
+    try{
+      var obj = JSON.parse(String(reader.result));
+      var d = obj && obj.data ? obj.data : obj;
+      if(!d || typeof d !== 'object') throw new Error('格式错误');
+      var base = emptyDB();
+      var next = emptyDB();
+      ['reviews','tasks','metrics','highlights','issues','lessons','plans','log'].forEach(function(k){
+        next[k] = Array.isArray(d[k]) ? d[k] : [];
+      });
+      next.savedAt = new Date().toISOString();
+      var count = next.tasks.length + next.metrics.length + next.highlights.length + next.issues.length + next.lessons.length + next.plans.length;
+      askConfirm('导入确认', '将导入 ' + count + ' 条记录，并覆盖当前全部数据（当前 ' + totalRecords() + ' 条）。确定继续？', function(){
+        DB = next;
+        localStorage.setItem(STORE_KEY, JSON.stringify(DB));
+        state.week = isoWeekKey(new Date());
+        pushLog('导入 JSON 备份（' + count + ' 条）');
+        saveData();
+        toast('已导入 ' + count + ' 条记录', 'ok');
+        refreshAll();
+      });
+    }catch(e){
+      toast('导入失败：文件格式不正确', 'err');
+    }
+  };
+  reader.onerror = function(){ toast('读取文件失败', 'err'); };
+  reader.readAsText(file);
+}
+function clearAll(){
+  askConfirm('清空全部数据', '此操作将删除本机保存的全部复盘数据（共 ' + totalRecords() + ' 条），且无法恢复。建议先导出备份。确定继续？', function(){
+    DB = emptyDB();
+    try{ localStorage.removeItem(STORE_KEY); }catch(e){}
+    state.week = isoWeekKey(new Date());
+    saveData();
+    toast('数据已清空', 'ok');
+    refreshAll();
+  });
+}
+function loadDemo(){
+  askConfirm('载入示例数据', '将用一组示例数据覆盖当前内容，方便你快速了解各模块用法。确定继续？', function(){
+    DB = buildDemo();
+    saveData();
+    state.week = isoWeekKey(new Date());
+    toast('示例数据已载入', 'ok');
+    refreshAll();
+  });
+}
+
+/* ---------------- 示例数据（含 1 条逾期记录） ---------------- */
+function buildDemo(){
+  var d = emptyDB();
+  var cur = isoWeekKey(new Date());
+  var prev = shiftWeek(cur, -1);
+  var next = shiftWeek(cur, 1);
+  var curR = weekRange(cur), prevR = weekRange(prev), nextR = weekRange(next);
+  var now = new Date().toISOString();
+  function mk(o){
+    o.id = o.id || uid();
+    if(!o.domain) o.domain = '工作';
+    if(o.kind !== 'review' && typeof o.energy === 'undefined') o.energy = null;
+    o.createdAt = o.createdAt || now;
+    o.updatedAt = o.updatedAt || now;
+    return o;
+  }
+  var t0 = Date.now();
+
+  d.reviews.push(mk({week:prev, domain:'工作', goal:'完成产品 v2.1 迭代并上线', progress:80, mood:'平稳',
+    summary:'主线按计划推进，协作沟通成本偏高', energy:7, energyNote:'周三最稳，周五注意力分散', archived:false}));
+  d.reviews.push(mk({week:cur, domain:'工作', goal:'推进 Q3 复盘并完成下季度规划', progress:45, mood:'平稳',
+    summary:'前半周效率不错，周中被临时会议打断', energy:6, energyNote:'下午专注度下滑明显', archived:false}));
+
+  var cats = ['工作','学习','健康','生活'];
+  var prevTasks = [
+    ['完成 v2.1 需求评审','工作','已完成',100,'共评审 12 条需求，砍掉 3 条低优先级'],
+    ['输出季度数据看板','工作','已完成',100,''],
+    ['读完《深度工作》第 3 章','学习','已完成',100,''],
+    ['跑步 3 次','健康','已完成',100,'共 15 公里']
+  ];
+  prevTasks.forEach(function(a,i){
+    d.tasks.push(mk({week:prev, title:a[0], category:a[1], status:a[2], progress:a[3], tags:i===0?['评审','协作']:[], note:a[4], createdAt:new Date(t0-86400000*(10-i)).toISOString()}));
+  });
+
+  var curTasks = [
+    ['完成 Q3 业务复盘报告初稿','工作','已完成',100,'已发给主管，等反馈', ['复盘','报告']],
+    ['整理下季度目标拆解','工作','进行中',60,'完成 3/5 个模块', ['规划']],
+    ['每周三次力量训练','健康','进行中',66,'已完成 2 次', ['运动']],
+    ['读完《卡片笔记写作法》','学习','进行中',40,'读到第 5 章', ['阅读']],
+    ['预约体检','生活','待开始',0,'一直拖着没约', ['行政']]
+  ];
+  curTasks.forEach(function(a,i){
+    d.tasks.push(mk({week:cur, title:a[0], category:a[1], status:a[2], progress:a[3], note:a[4], tags:a[5]||[], createdAt:new Date(t0-3600000*(8-i)).toISOString()}));
+  });
+
+  [['深度工作时长', '时长', 18, '小时', 20, '不含会议'],
+   ['完成任务数', '数量', 12, '个', 15, '含临时插入任务'],
+   ['专注比率', '比率', 62, '%', 70, '']].forEach(function(m,i){
+    d.metrics.push(mk({week:cur, name:m[0], type:m[1], value:m[2], unit:m[3], target:m[4], note:m[5], createdAt:new Date(t0-3600000*(5-i)).toISOString()}));
+  });
+  [['深度工作时长', '时长', 15, '小时', 20, ''],
+   ['完成任务数', '数量', 16, '个', 15, ''],
+   ['专注比率', '比率', 55, '%', 70, '']].forEach(function(m,i){
+    d.metrics.push(mk({week:prev, name:m[0], type:m[1], value:m[2], unit:m[3], target:m[4], note:m[5], createdAt:new Date(t0-86400000*(8-i)).toISOString()}));
+  });
+
+  d.highlights.push(mk({week:cur, title:'复盘报告一次过审', score:5, note:'提前把数据口径和结论对齐，评审时几乎没返工。'}));
+  d.highlights.push(mk({week:cur, title:'连续三天完成晨间计划', score:4, note:'把最难的事放在早上第一件事，效率明显提升。'}));
+  d.highlights.push(mk({week:prev, title:'v2.1 按时上线', score:5, note:'需求范围控制得当。'}));
+
+  d.issues.push(mk({week:cur, title:'周中排期被临时会议打断', reason:'没有提前在日历上预留缓冲时段，且临时会议来者不拒。',
+    impact:'高', status:'处理中', action:'每天预留 1 小时缓冲，非必要会议改为异步沟通'}));
+  d.issues.push(mk({week:cur, title:'体检一直拖着没约', reason:'任务颗粒度太大，没有拆成可执行的最小动作。',
+    impact:'低', status:'待处理', action:'拆成「选医院 → 打电话 → 预约」三步，本周先完成第一步'}));
+  d.issues.push(mk({week:prev, title:'需求变更未同步', reason:'缺少变更记录表。', impact:'中', status:'已解决', action:'建立变更看板'}));
+
+  d.lessons.push(mk({week:cur, title:'会前先发议程', type:'经验', reuse:5, tags:['协作','会议'],
+    content:'会前 1 小时把议程和待决策点发出去，会议时长平均缩短 30%。适用场景：需要多方决策的评审会。'}));
+  d.lessons.push(mk({week:cur, title:'临时需求不能立即接', type:'教训', reuse:4, tags:['排期'],
+    content:'这周三次临时需求直接插队，导致主线任务延后。下次先评估再排期，不要口头答应。'}));
+  d.lessons.push(mk({week:cur, title:'停止无目的刷信息流', type:'停止事项', reuse:5, tags:['专注'],
+    content:'午休后刷手机平均耗时 40 分钟。改为散步 10 分钟或闭目休息。'}));
+  d.lessons.push(mk({week:prev, title:'需求评审先定优先级', type:'经验', reuse:4, tags:['需求'],
+    content:'先砍需求再排期，比先排期再砍需求节省一半时间。'}));
+
+  /* 逾期项：目标日期在今天之前且未完成 */
+  var y = new Date(); y.setDate(y.getDate() - 3);
+  d.plans.push(mk({week:cur, title:'预约年度体检', date:fmtDate(y), priority:'P1', status:'待开始', progress:0,
+    note:'上周遗留，已逾期', from:'迁移自 '+prev, createdAt:new Date(t0-86400000*3).toISOString()}));
+  d.plans.push(mk({week:cur, title:'完成复盘报告终稿', date:fmtDate(curR.end), priority:'P0', status:'进行中', progress:60, note:'等待主管反馈'}));
+  d.plans.push(mk({week:next, title:'输出下季度 OKR 草案', date:fmtDate(nextR.start), priority:'P0', status:'待开始', progress:0, note:'先列目标再对齐'}));
+  d.plans.push(mk({week:next, title:'搭建个人知识库目录', date:fmtDate(nextR.start), priority:'P2', status:'待开始', progress:0, note:''}));
+  d.plans.push(mk({week:next, title:'每周三次力量训练', date:fmtDate(nextR.start), priority:'P1', status:'待开始', progress:0, note:'本周只完成 2 次，下周补齐'}));
+
+  d.log = [
+    {t:new Date(t0-60000).toISOString(), text:'载入示例数据'},
+    {t:new Date(t0-3600000).toISOString(), text:'新增完成事项：整理下季度目标拆解'},
+    {t:new Date(t0-7200000).toISOString(), text:'新增高光时刻：复盘报告一次过审'}
+  ];
+  d.savedAt = new Date().toISOString();
+  return d;
+}
+
+/* ---------------- 弹层控制 ---------------- */
+function openOverlay(id){
+  var el = document.getElementById(id);
+  if(el) el.classList.add('open');
+}
+function closeOverlay(id){
+  var el = document.getElementById(id);
+  if(el) el.classList.remove('open');
+}
+function openSettings(){
+  renderSaveTime();
+  openOverlay('settingsOverlay');
+}
+function closeMenu(){
+  document.getElementById('sidebar').classList.remove('open');
+  document.getElementById('scrim').classList.remove('open');
+}
+function toggleMenu(){
+  var isMobile = window.matchMedia ? window.matchMedia('(max-width:768px)').matches : false;
+  if(isMobile){
+    document.getElementById('sidebar').classList.toggle('open');
+    document.getElementById('scrim').classList.toggle('open');
+  }else{
+    document.getElementById('app').classList.toggle('side-collapsed');
+  }
+}
+
+/* ---------------- Toast ---------------- */
+function toast(msg, type){
+  var wrap = document.getElementById('toastWrap');
+  if(!wrap) return;
+  var icons = {ok:'checkCircle', err:'alert', info:'clock'};
+  var el = document.createElement('div');
+  el.className = 'toast ' + (type||'info');
+  el.innerHTML = svg(icons[type||'info'], 15) + '<span>' + esc(msg) + '</span>';
+  wrap.appendChild(el);
+  setTimeout(function(){
+    el.style.transition = 'opacity .25s, transform .25s';
+    el.style.opacity = '0'; el.style.transform = 'translateY(-8px)';
+    setTimeout(function(){ if(el.parentNode) el.parentNode.removeChild(el); }, 260);
+  }, 2200);
+}
+
+/* ---------------- 事件绑定（一次性委托，渲染后无需重新绑定） ---------------- */
+function bindEvents(){
+  document.addEventListener('click', function(e){
+    var el = e.target.closest ? e.target.closest('[data-act]') : null;
+    if(!el) return;
+    var act = el.getAttribute('data-act');
+    var kind = el.getAttribute('data-kind');
+    var id = el.getAttribute('data-id');
+    switch(act){
+      case 'go':
+        go(el.getAttribute('data-view')); break;
+      case 'go-week':
+        state.week = el.getAttribute('data-week');
+        refreshAll();
+        toast('已切换到 ' + state.week, 'info');
+        break;
+      case 'toggle-menu': toggleMenu(); break;
+      case 'week-prev': state.week = shiftWeek(state.week, -1); refreshAll(); break;
+      case 'week-next': state.week = shiftWeek(state.week, 1); refreshAll(); break;
+      case 'add':
+        openForm(kind, null); break;
+      case 'edit':
+        openForm(kind, id); break;
+      case 'edit-review':
+        openForm('review', null); break;
+      case 'del':
+        doDelete(kind, id); break;
+      case 'toggle-task': toggleTask(id); break;
+      case 'toggle-plan': togglePlan(id); break;
+      case 'quick': quickAction(kind, id, el.getAttribute('data-q')); break;
+      case 'defer-plan': quickAction('plans', id, 'defer'); break;
+      case 'migrate': migrateUndone(); break;
+      case 'archive-week': toggleArchive(); break;
+      case 'set-domain':
+        state.domain = el.getAttribute('data-dom') || 'all';
+        refreshAll();
+        break;
+      case 'gen-quarter-draft': genQuarterDraft(); break;
+      case 'copy-quarter-draft': copyQuarterDraft(); break;
+      case 'open-settings': openSettings(); break;
+      case 'close-settings': closeOverlay('settingsOverlay'); break;
+      case 'close-form': closeOverlay('formOverlay'); break;
+      case 'submit-form': submitForm(); break;
+      case 'confirm-cancel': state.confirmCb = null; closeOverlay('confirmOverlay'); break;
+      case 'confirm-ok':
+        var cb = state.confirmCb; state.confirmCb = null;
+        closeOverlay('confirmOverlay');
+        if(typeof cb === 'function') cb();
+        break;
+      case 'export-json': exportJSON(); break;
+      case 'import-json':
+        document.getElementById('importFile').click(); break;
+      case 'clear-all': clearAll(); break;
+      case 'load-demo': loadDemo(); break;
+      case 'gen-draft': genDraft(); break;
+      case 'copy-draft': copyDraft(); break;
+      case 'tag-remove':
+        var tg = el.getAttribute('data-tag');
+        state.form.tags = state.form.tags.filter(function(x){ return x !== tg; });
+        var box = document.querySelector('#formBody [data-tagbox]');
+        if(box){
+          box.innerHTML = state.form.tags.map(function(t){
+            return '<span class="tag-chip">#'+esc(t)+'<button data-act="tag-remove" data-tag="'+esc(t)+'">'+svg('close',10)+'</button></span>';
+          }).join('');
+        }
+        e.stopPropagation();
+        break;
+    }
+  });
+
+  /* 搜索输入 */
+  document.addEventListener('input', function(e){
+    var t = e.target;
+    if(!t) return;
+    if(t.hasAttribute && t.hasAttribute('data-filter')){
+      var k = t.getAttribute('data-filter');
+      state.filters[k] = t.value;
+      if(k==='tasks') renderTasks();
+      else if(k==='metrics') renderMetrics();
+      else if(k==='highlights') renderHL();
+      else if(k==='issues') renderIssues();
+      else if(k==='lessons') renderLessons();
+      else if(k==='plans') renderPlans();
+      return;
+    }
+    if(t.hasAttribute && t.hasAttribute('data-range')){
+      var key = t.getAttribute('data-key');
+      var rv = document.querySelector('#formBody [data-rv="'+key+'"]');
+      var sc = SCHEMAS[state.form.kind];
+      var unit = '';
+      if(sc){ sc.fields.forEach(function(f){ if(f.key===key) unit = f.unit||''; }); }
+      if(rv) rv.textContent = t.value + unit;
+      return;
+    }
+    if(t.id === 'draftBox'){
+      try{ localStorage.setItem(STORE_KEY + '_draft', t.value); }catch(err){}
+    }
+  });
+
+  /* 筛选下拉（分类 / 状态 / 排序） */
+  document.addEventListener('change', function(e){
+    var t = e.target;
+    if(!t || !t.id) return;
+    if(t.id === 'weekSelect'){
+      state.week = t.value;
+      refreshAll();
+      return;
+    }
+    if(t.id === 'f-tasks-cat'){ state.catFilter.tasks = t.value; renderTasks(); }
+    else if(t.id === 'f-tasks-status'){ state.statusFilter.tasks = t.value; renderTasks(); }
+    else if(t.id === 'f-tasks-sort'){ state.sorts.tasks = t.value; renderTasks(); }
+    else if(t.id === 'f-metrics-type'){ state.catFilter.metrics = t.value; renderMetrics(); }
+    else if(t.id === 'f-metrics-sort'){ state.sorts.metrics = t.value; renderMetrics(); }
+    else if(t.id === 'f-hl-sort'){ state.sorts.highlights = t.value; renderHL(); }
+    else if(t.id === 'f-issues-status'){ state.statusFilter.issues = t.value; renderIssues(); }
+    else if(t.id === 'f-issues-sort'){ state.sorts.issues = t.value; renderIssues(); }
+    else if(t.id === 'f-lessons-type'){ state.catFilter.lessons = t.value; renderLessons(); }
+    else if(t.id === 'f-lessons-sort'){ state.sorts.lessons = t.value; renderLessons(); }
+    else if(t.id === 'f-plans-priority'){ state.catFilter.plans = t.value; renderPlans(); }
+    else if(t.id === 'f-plans-status'){ state.statusFilter.plans = t.value; renderPlans(); }
+    else if(t.id === 'f-plans-sort'){ state.sorts.plans = t.value; renderPlans(); }
+    else if(t.id === 'q-year'){
+      var q0 = ensureQuarter();
+      q0.y = parseInt(t.value, 10);
+      renderQuarter();
+    }
+    else if(t.id === 'q-quarter'){
+      var q1 = ensureQuarter();
+      q1.q = parseInt(t.value, 10);
+      renderQuarter();
+    }
+    else if(t.id === 'importFile'){
+      if(t.files && t.files[0]) importJSON(t.files[0]);
+      t.value = '';
+    }
+  });
+
+  /* 标签输入回车 */
+  document.addEventListener('keydown', function(e){
+    var t = e.target;
+    if(t && t.hasAttribute && t.hasAttribute('data-taginput') && (e.key === 'Enter' || e.key === ',')){
+      e.preventDefault();
+      var v = t.value.trim().replace(/^#/, '');
+      if(!v){ return; }
+      if(state.form.tags.indexOf(v) > -1){ t.value = ''; return; }
+      if(state.form.tags.length >= 8){ toast('最多添加 8 个标签', 'err'); return; }
+      state.form.tags.push(v);
+      t.value = '';
+      var box = document.querySelector('#formBody [data-tagbox]');
+      if(box){
+        box.innerHTML = state.form.tags.map(function(x){
+          return '<span class="tag-chip">#'+esc(x)+'<button data-act="tag-remove" data-tag="'+esc(x)+'">'+svg('close',10)+'</button></span>';
+        }).join('');
+      }
+      return;
+    }
+    if(e.key === 'Escape'){
+      closeOverlay('formOverlay'); closeOverlay('settingsOverlay'); closeOverlay('confirmOverlay'); closeMenu();
+    }
+    if((e.ctrlKey || e.metaKey) && e.key === 'Enter'){
+      if(document.getElementById('formOverlay').classList.contains('open')) submitForm();
+    }
+  });
+
+  /* 点击遮罩关闭 */
+  ['settingsOverlay','formOverlay','confirmOverlay'].forEach(function(id){
+    var ov = document.getElementById(id);
+    if(ov) ov.addEventListener('click', function(e){ if(e.target === ov) closeOverlay(id); });
+  });
+  var scrim = document.getElementById('scrim');
+  if(scrim) scrim.addEventListener('click', closeMenu);
+
+  /* 关闭页面前静默保存 */
+  window.addEventListener('beforeunload', function(){
+    try{ DB.savedAt = new Date().toISOString(); localStorage.setItem(STORE_KEY, JSON.stringify(DB)); }catch(e){}
+  });
+}
+
+/* ---------------- 静态图标注入 ---------------- */
+function injectIcons(){
+  var map = {
+    brandIcon:svg('ring',19,'#FFFFFF'), sideSettingsIcon:svg('gear',15), gearIcon:svg('gear',15),
+    menuIcon:svg('menu',16), prevIcon:svg('left',16), nextIcon:svg('right',16), mbIcon:svg('ring',18,'#3E9B72'),
+    archIcon:svg('archive',15), closeIcon:svg('close',17), closeIcon2:svg('close',17),
+    dlIcon:svg('download',15), ulIcon:svg('upload',15), trashIcon:svg('trash',15),
+    icChart:svg('chart',16,'#3E9B72'), icFlag:svg('flag',16,'#3E9B72'), icStar2:svg('star',16,'#3E9B72'),
+    icAlert:svg('alert',16,'#C85A4F'), icFlag2:svg('flag',16,'#3E9B72'), icClock:svg('clock',16,'#3E9B72'),
+    icTarget:svg('target',16,'#3E9B72'), icChart2:svg('chart',16,'#3E9B72'), icChart3:svg('chart',16,'#3E9B72'),
+    icChart4:svg('chart',16,'#3E9B72'), icChart5:svg('chart',16,'#3E9B72'), icCompare:svg('compare',16,'#3E9B72'),
+    icCompare2:svg('compare',16,'#3E9B72'), icPlus:svg('plus',15,'#FFFFFF'), icPlus2:svg('plus',15,'#FFFFFF'),
+    icCheck:svg('check',16,'#3E9B72'), icCheck2:svg('check',16,'#3E9B72'), icStar:svg('star',16,'#3E9B72'),
+    icAlert2:svg('alert',16,'#3E9B72'), icBook:svg('book',16,'#3E9B72'), icSparkle:svg('sparkle',16,'#3E9B72'),
+    icFlag3:svg('flag',16,'#3E9B72'),
+    icSearch:svg('search',15), icSearch2:svg('search',15), icSearch3:svg('search',15),
+    icSearch4:svg('search',15), icSearch5:svg('search',15), icSearch6:svg('search',15)
+  };
+  Object.keys(map).forEach(function(k){
+    var el = document.getElementById(k);
+    if(el) el.innerHTML = map[k];
+  });
+}
+
+/* ---------------- 初始化 ---------------- */
+var __inited = false;
+function init(){
+  if(__inited) return;  /* 幂等守卫：防止 DOMContentLoaded 被重复触发时重复绑定 */
+  __inited = true;
+  injectIcons();
+  var loaded = loadData();
+  if(loaded){
+    /* 只要存在存档就沿用（含用户清空后的空存档，不再重新灌示例数据） */
+    DB = loaded;
+  }else{
+    DB = buildDemo();
+    try{ localStorage.setItem(STORE_KEY, JSON.stringify(DB)); }catch(e){}
+  }
+  state.week = isoWeekKey(new Date());
+
+  /* 恢复上次草稿 */
+  var box = document.getElementById('draftBox');
+  if(box){
+    try{
+      var saved = localStorage.getItem(STORE_KEY + '_draft');
+      if(saved) box.value = saved;
+    }catch(e){}
+  }
+
+  bindEvents();
+  refreshAll();
+
+  /* 数据积累提醒 */
+  var n = totalRecords();
+  if(n >= 30){
+    setTimeout(function(){ toast('数据已积累 ' + n + ' 条，建议导出 JSON 备份', 'info'); }, 1200);
+  }
+}
+if(document.readyState === 'loading'){
+  document.addEventListener('DOMContentLoaded', init);
+}else{
+  init();
+}
+</script>
+</body>
+</html>

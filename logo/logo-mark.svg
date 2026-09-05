@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <!-- 每周复盘工作台 · Logo Mark · 周循环圆环方案 -->
+  <rect x="48" y="48" width="416" height="416" rx="92" fill="#FDFBF6"/>
+  <rect x="48" y="48" width="416" height="416" rx="92" fill="none" stroke="#EAE2D2" stroke-width="4"/>
+
+  <!-- 周循环外环：浅色底环 + 绿色进度环 -->
+  <g transform="rotate(-90 256 256)">
+    <circle cx="256" cy="256" r="150" fill="none" stroke="#EDE5D3" stroke-width="34"/>
+    <circle cx="256" cy="256" r="150" fill="none" stroke="#3E9B72" stroke-width="34"
+            stroke-dasharray="942.5 942.5" stroke-dashoffset="-216" stroke-linecap="round"/>
+  </g>
+
+  <!-- 深蓝内勾：完成 / 复盘确认 -->
+  <path d="M200 268 L244 314 L324 208" fill="none" stroke="#1E3A5F" stroke-width="26"
+        stroke-linecap="round" stroke-linejoin="round"/>
+
+  <!-- 琥珀焦点：周历/亮点 -->
+  <circle cx="398" cy="120" r="20" fill="#D9963C"/>
+</svg>

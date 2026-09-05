@@ -3335,7 +3335,9 @@ function init(){
     /* 只要存在存档就沿用（含用户清空后的空存档，不再重新灌示例数据） */
     DB = loaded;
   }else{
-    DB = buildDemo();
+    /* 首次访问：白板状态，不自动塞种子数据；立即写入 localStorage 完成"已初始化"标记，
+       下次进入就走 loaded 分支，不会反复触发首次逻辑 */
+    DB = emptyDB();
     try{ localStorage.setItem(STORE_KEY, JSON.stringify(DB)); }catch(e){}
   }
   state.week = isoWeekKey(new Date());

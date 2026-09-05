@@ -961,6 +961,42 @@ function loadExtraCats(){ try{ var raw = localStorage.getItem(CAT_STORE_KEY); va
 function saveExtraCats(){ try{ localStorage.setItem(CAT_STORE_KEY, JSON.stringify(_extraCats)); }catch(e){} }
 function getCategories(){ var s={},a=[]; CATEGORIES_BASE.forEach(function(c){ if(!s[c]){ s[c]=1; a.push(c);} }); _extraCats.forEach(function(c){ if(!s[c]){ s[c]=1; a.push(c);} }); return a; }
 function addCategory(name){ name = String(name||'').trim(); if(!name) return false; if(getCategories().indexOf(name) >= 0) return false; _extraCats.push(name); saveExtraCats(); return true; }
+/* 统计某分类被多少事项引用（含历史已删除的分类：可能仍有遗留值） */
+function getCategoryUsage(name){
+  var n = 0;
+  (DB.tasks||[]).forEach(function(x){ if(x.category === name) n++; });
+  (DB.plans||[]).forEach(function(x){ if(x.category === name) n++; });
+  return n;
+}
+/* 重命名自定义分类：同步更新 _extraCats 和所有引用该分类的事项 */
+function renameCategory(oldName, newName){
+  oldName = String(oldName||'').trim();
+  newName = String(newName||'').trim();
+  if(!oldName || !newName || oldName === newName) return false;
+  if(CATEGORIES_BASE.indexOf(oldName) >= 0) return false;  /* 内置不可改名 */
+  if(getCategories().indexOf(newName) >= 0) return false;  /* 与已有重名 */
+  var idx = _extraCats.indexOf(oldName);
+  if(idx < 0) return false;  /* 只能改自定义分类 */
+  _extraCats[idx] = newName;
+  saveExtraCats();
+  var upd = 0;
+  ['tasks','plans'].forEach(function(k){
+    (DB[k]||[]).forEach(function(it){ if(it.category === oldName){ it.category = newName; upd++; } });
+  });
+  if(upd > 0){ saveData(); }
+  return true;
+}
+/* 删除自定义分类：仅从下拉移除，不动历史事项（保留原值，列表里仍能看到） */
+function removeCategory(name){
+  name = String(name||'').trim();
+  if(!name) return false;
+  if(CATEGORIES_BASE.indexOf(name) >= 0) return false;  /* 内置不可删 */
+  var idx = _extraCats.indexOf(name);
+  if(idx < 0) return false;
+  _extraCats.splice(idx, 1);
+  saveExtraCats();
+  return true;
+}
 /* 注意：表单请用 getCategories() 拿最新（含用户自定义），不要直接缓存数组 */
 var METRIC_TYPES = ['数量','时长','比率','金额'];
 /* 工作 / 生活 双栏：所有记录都可归属到其中一个域 */
@@ -2412,8 +2448,10 @@ function openForm(kind, id){
         h += '<option value="'+esc(o)+'"'+(String(o)===String(v)?' selected':'')+'>'+esc(o)+'</option>';
       });
       h += '<option value="__custom__">+ 自定义分类…</option>';
+      h += '<option value="__manage__">⚙ 管理分类…</option>';
       h += '</select>';
       h += '<input type="text" data-custom-cat="'+f.key+'" placeholder="输入新分类名（≤8字）" maxlength="8" style="display:none;margin-top:6px">';
+      h += '<button type="button" data-act="manage-categories" class="btn btn-sm" style="display:none;margin-top:8px">⚙ 打开分类管理</button>';
     }else if(f.type === 'textarea'){
       h += '<textarea data-key="'+f.key+'" placeholder="'+esc(f.ph||'')+'">'+esc(v)+'</textarea>';
     }else if(f.type === 'range'){
@@ -2436,26 +2474,172 @@ function openForm(kind, id){
   document.getElementById('formBody').innerHTML = h;
   document.getElementById('formTitle').textContent = (id||kind==='review' ? '编辑' : '新增') + schema.title;
   document.getElementById('formSubmit').textContent = '保存';
+  document.getElementById('formSubmit').style.display = '';  /* 恢复显示（可能被 openCategoryManager 隐藏） */
   openOverlay('formOverlay');
   setTimeout(function(){
     var first = document.querySelector('#formBody input[type=text], #formBody textarea');
     if(first && window.innerWidth > 768) first.focus();
-    // 自定义分类：选中"+ 自定义分类…"时显示输入框
+    // 自定义分类：选中"+ 自定义分类…"时显示输入框；选"管理分类…"时打开管理面板
     var sel = document.querySelector('#formBody [data-cat-select]');
     if(sel){
       sel.addEventListener('change', function(){
         var inp = document.querySelector('#formBody [data-custom-cat="'+sel.getAttribute('data-key')+'"]');
+        var btn = document.querySelector('#formBody [data-act="manage-categories"]');
         if(!inp) return;
         if(sel.value === '__custom__'){
           inp.style.display = '';
+          if(btn) btn.style.display = 'none';
           inp.focus();
+        }else if(sel.value === '__manage__'){
+          inp.style.display = 'none';
+          inp.value = '';
+          if(btn) btn.style.display = '';
+          openCategoryManager();
         }else{
           inp.style.display = 'none';
           inp.value = '';
+          if(btn) btn.style.display = 'none';
         }
       });
     }
   }, 60);
+}
+/* ---------------- 分类管理面板（复用 formOverlay 弹窗） ---------------- */
+function openCategoryManager(){
+  var $body = document.getElementById('formBody');
+  var $title = document.getElementById('formTitle');
+  var $submit = document.getElementById('formSubmit');
+  $title.textContent = '管理分类';
+  $body.innerHTML = '';
+  /* 隐藏内置的"保存"按钮——分类管理不涉及保存数据 */
+  if($submit) $submit.style.display = 'none';
+
+  var extras = _extraCats.slice();
+
+  /* 说明 */
+  var desc = document.createElement('div');
+  desc.style.cssText = 'font-size:13px;color:var(--text-2);margin-bottom:14px;line-height:1.7;padding:10px 12px;background:var(--bg-2);border-radius:8px;border:1px solid var(--border-1)';
+  desc.innerHTML = '<b style="color:var(--text-1)">说明</b><br>'+
+    '· 内置分类（'+CATEGORIES_BASE.join('、')+'）不可改名或删除<br>'+
+    '· <b>新增</b>：仅作用于下拉选项，不影响已有数据<br>'+
+    '· <b>改名</b>：同步更新所有引用该分类的事项<br>'+
+    '· <b>删除</b>：从下拉移除，但历史事项的分类值会保留（旧值不再可选中，但数据不丢失）';
+  $body.appendChild(desc);
+
+  /* 新增行 */
+  var addRow = document.createElement('div');
+  addRow.style.cssText = 'display:flex;gap:6px;margin-bottom:14px;padding-bottom:14px;border-bottom:1px solid var(--border-1)';
+  var addInput = document.createElement('input');
+  addInput.type = 'text';
+  addInput.placeholder = '新分类名（≤8字）';
+  addInput.maxLength = 8;
+  addInput.style.cssText = 'flex:1;padding:8px 10px;border:1px solid var(--border-1);border-radius:6px;background:var(--bg-1);color:var(--text-1);font-size:14px;outline:none';
+  var addBtn = document.createElement('button');
+  addBtn.type = 'button';
+  addBtn.className = 'btn btn-primary btn-sm';
+  addBtn.textContent = '+ 添加';
+  addBtn.onclick = function(){
+    var n = addInput.value.trim();
+    if(!n){ toast('请输入分类名','warn'); return; }
+    if(addCategory(n)){
+      addInput.value = '';
+      toast('已添加：'+n, 'ok');
+      openCategoryManager();
+    } else {
+      toast('已存在或名称无效','warn');
+    }
+  };
+  addInput.onkeydown = function(e){ if(e.key==='Enter'){ e.preventDefault(); addBtn.click(); } };
+  addRow.appendChild(addInput);
+  addRow.appendChild(addBtn);
+  $body.appendChild(addRow);
+
+  /* 内置分类（只读） */
+  var baseWrap = document.createElement('div');
+  baseWrap.style.cssText = 'margin-bottom:14px';
+  baseWrap.innerHTML = '<div style="font-size:12px;color:var(--text-3);margin-bottom:6px">内置分类（不可修改）</div>';
+  var baseChips = document.createElement('div');
+  baseChips.style.cssText = 'display:flex;flex-wrap:wrap;gap:6px';
+  CATEGORIES_BASE.forEach(function(c){
+    var ch = document.createElement('span');
+    ch.style.cssText = 'padding:4px 10px;border-radius:14px;background:var(--bg-2);color:var(--text-2);font-size:12px;border:1px solid var(--border-1)';
+    ch.textContent = c;
+    baseChips.appendChild(ch);
+  });
+  baseWrap.appendChild(baseChips);
+  $body.appendChild(baseWrap);
+
+  /* 自定义分类列表 */
+  var listWrap = document.createElement('div');
+  listWrap.innerHTML = '<div style="font-size:12px;color:var(--text-3);margin-bottom:6px">自定义分类（可改名/删除）</div>';
+  if(extras.length === 0){
+    var empty = document.createElement('div');
+    empty.style.cssText = 'text-align:center;color:var(--text-3);padding:18px 0;font-size:13px;border:1px dashed var(--border-1);border-radius:8px';
+    empty.textContent = '暂无自定义分类';
+    listWrap.appendChild(empty);
+  } else {
+    extras.forEach(function(c){
+      var row = document.createElement('div');
+      row.style.cssText = 'display:flex;align-items:center;gap:8px;padding:10px 12px;border:1px solid var(--border-1);border-radius:8px;margin-bottom:6px;background:var(--bg-1)';
+      var name = document.createElement('div');
+      name.style.cssText = 'flex:1;font-size:14px;color:var(--text-1);font-weight:500';
+      var usage = getCategoryUsage(c);
+      name.innerHTML = esc(c) + (usage > 0 ? ' <span style="color:var(--text-3);font-weight:normal;font-size:12px">（'+usage+' 条事项）</span>' : '');
+      var renameBtn = document.createElement('button');
+      renameBtn.type = 'button';
+      renameBtn.className = 'btn btn-sm';
+      renameBtn.textContent = '改名';
+      renameBtn.onclick = function(){
+        var nn = window.prompt('把 "'+c+'" 改名为：', c);
+        if(nn === null) return;
+        nn = nn.trim();
+        if(!nn){ toast('名称不能为空','warn'); return; }
+        if(nn === c){ return; }
+        if(renameCategory(c, nn)){
+          toast('已改名：'+c+' → '+nn, 'ok');
+          pushLog('分类改名：'+c+' → '+nn);
+          openCategoryManager();
+        } else {
+          toast('改名失败：与内置或其他自定义分类重名','warn');
+        }
+      };
+      var delBtn = document.createElement('button');
+      delBtn.type = 'button';
+      delBtn.className = 'btn btn-sm btn-danger';
+      delBtn.textContent = '删除';
+      delBtn.onclick = function(){
+        var u = getCategoryUsage(c);
+        var msg = u > 0
+          ? '确定删除自定义分类「'+c+'」？\n\n该分类下还有 '+u+' 条事项。删除后下拉中将不再显示该分类，但这些事项的分类值会保留为历史数据（不影响统计与展示）。'
+          : '确定删除自定义分类「'+c+'」？';
+        askConfirm('删除分类', msg, function(){
+          if(removeCategory(c)){
+            toast('已删除：'+c, 'ok');
+            pushLog('删除自定义分类：'+c);
+            openCategoryManager();
+          }
+        });
+      };
+      row.appendChild(name);
+      row.appendChild(renameBtn);
+      row.appendChild(delBtn);
+      listWrap.appendChild(row);
+    });
+  }
+  $body.appendChild(listWrap);
+
+  /* 在底部加一个明确的"关闭"按钮（save 按钮已隐藏，避免误存） */
+  var $foot = document.querySelector('#formOverlay .modal-foot');
+  if($foot){
+    var doneBtn = document.createElement('button');
+    doneBtn.type = 'button';
+    doneBtn.className = 'btn btn-primary';
+    doneBtn.textContent = '完成';
+    doneBtn.onclick = function(){ closeOverlay('formOverlay'); };
+    $foot.appendChild(doneBtn);
+  }
+
+  openOverlay('formOverlay');
 }
 function collectForm(){
   var schema = SCHEMAS[state.form.kind];
